@@ -101,8 +101,27 @@ for (i in 1:length(dictionnaire_image_qc))
 {
   image_landsat <- ee$Image(dictionnaire_image_qc[i])
   task_img <- ee$batch$Export$image$toDrive(image = image_landsat,
-                                            region = secteur_ville_qc)
-  task_img$start()
+                                            region = secteur_ville_qc,
+                                            fileNamePrefix = dictionnaire_image_qc[i],
+                                            folder = 'Ville_de_qc_2016')
+  task_img$start()$
   ee_monitoring(task_img)
+  if(i == 2)
+  {
+    break
+  }
 }
+
+#####Test 3: Telechargement des images avec un pretraitement (Cloud Cover et ML et AL pour le calcul de TOA) #########
+image_landsat <- ee$Image(dictionnaire_image_qc[1])
+couvert_nuageux <- image_landsat$get('CLOUD_COVER')
+couvert_nuageux <- couvert_nuageux$getInfo()
+
+multiplicative_rescaling <- image_landsat$get('RADIANCE_MULT_BAND_10')
+multiplicative_rescaling <- multiplicative_rescaling$getInfo()
+
+additive_rescaling <- image_landsat$get('RADIANCE_ADD_BAND_10')
+additive_rescaling <- additive_rescaling$getInfo()
+
+
 
