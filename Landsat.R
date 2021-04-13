@@ -162,8 +162,6 @@ for (i in 1:length(dictionnaire_image_qc))
 }
 
 
+write.table(info_image, file = "/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_8_2016_ville_qc/Metadata/Metadata_Landsat_8_ville_de_qc_2016.txt")
+
 #avec ces informations, il est possible de calculer le TOA (quoiqu'il semble déjà fait par GEE, on peut comparer cette méthode avec)
-
-
-x <- data.frame(nom_image,multiplicative_rescaling, additive_rescaling, couvert_nuageux)
-
