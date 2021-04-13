@@ -126,6 +126,7 @@ additive_rescaling <- additive_rescaling$getInfo()
 nom_image <- image_landsat$get("system:index")
 nom_image <- nom_image$getInfo()
 
+rm(info_image)
 for (i in 1:length(dictionnaire_image_qc))
 {
   image_landsat <- ee$Image(dictionnaire_image_qc[i])
@@ -148,8 +149,7 @@ for (i in 1:length(dictionnaire_image_qc))
                                               region = secteur_ville_qc,
                                               fileNamePrefix = dictionnaire_image_qc[i],
                                               folder = 'Ville_de_qc_2016')
-    task_img$start()$
-    ee_monitoring(task_img)
+    task_img$start()#$ee_monitoring(task_img)
     
     if (isFALSE(exists('info_image') && is.data.frame(get('info_image'))))
     {
