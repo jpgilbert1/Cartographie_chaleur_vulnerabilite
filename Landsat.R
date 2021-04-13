@@ -129,7 +129,7 @@ nom_image <- nom_image$getInfo()
 rm(info_image)
 for (i in 1:length(dictionnaire_image_qc))
 {
-  image_landsat <- ee$Image(dictionnaire_image_qc[i])
+  image_landsat <- ee$Image(dictionnaire_image_qc[i])$select('B10')
   couvert_nuageux <- image_landsat$get('CLOUD_COVER')
   couvert_nuageux <- couvert_nuageux$getInfo()
   if(couvert_nuageux < 5)
@@ -148,8 +148,10 @@ for (i in 1:length(dictionnaire_image_qc))
     task_img <- ee$batch$Export$image$toDrive(image = image_landsat,
                                               region = secteur_ville_qc,
                                               fileNamePrefix = dictionnaire_image_qc[i],
-                                              folder = 'Ville_de_qc_2016')
-    task_img$start()#$ee_monitoring(task_img)
+                                              folder = 'Ville_de_qc_2016',
+                                              fileFormat = 'GEO_TIFF')
+    task_img$start()
+    #$ee_monitoring(task_img)
     
     if (isFALSE(exists('info_image') && is.data.frame(get('info_image'))))
     {
@@ -165,3 +167,8 @@ for (i in 1:length(dictionnaire_image_qc))
 write.table(info_image, file = "/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_8_2016_ville_qc/Metadata/Metadata_Landsat_8_ville_de_qc_2016.txt")
 
 #avec ces informations, il est possible de calculer le TOA (quoiqu'il semble déjà fait par GEE, on peut comparer cette méthode avec)
+
+
+library(raster)
+str_name<-'/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_8_2016_ville_qc/Images/Ville_de_qc_2016/LANDSAT_LC08_C01_T1_LC08_013027_20160415.tif' 
+imported_raster=raster(str_name)
