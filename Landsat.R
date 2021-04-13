@@ -45,6 +45,12 @@ l <- ee$Feature(test)
 
 #Deuxieme test : creation d'un dictionnaire pour les images Landsat de la ville de Qc en 2016 (date du plus recent recensement?)
 
+secteur_ville_qc <- c(-71.34950798924484,46.728698813821076,
+                      -71.01991814549484,46.728698813821076,
+                      -71.01991814549484,46.901625009007994,
+                      -71.34950798924484,46.901625009007994,
+                      -71.34950798924484,46.728698813821076)
+
 dictionnaire_image_qc <- c('LANDSAT/LC08/C01/T1/LC08_013027_20160211',
 'LANDSAT/LC08/C01/T1/LC08_013027_20160227',
 'LANDSAT/LC08/C01/T1/LC08_013027_20160314',
@@ -91,4 +97,12 @@ dictionnaire_image_qc <- c('LANDSAT/LC08/C01/T1/LC08_013027_20160211',
 'LANDSAT/LC08/C01/T1/LC08_014027_20160929',
 'LANDSAT/LC08/C01/T1/LC08_014027_20161015')
 
+for (i in 1:length(dictionnaire_image_qc))
+{
+  image_landsat <- ee$Image(dictionnaire_image_qc[i])
+  task_img <- ee$batch$Export$image$toDrive(image = image_landsat,
+                                            region = secteur_ville_qc)
+  task_img$start()
+  ee_monitoring(task_img)
+}
 
