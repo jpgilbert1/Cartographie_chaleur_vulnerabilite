@@ -167,14 +167,21 @@ for (i in 1:length(dictionnaire_image_qc))
 write.table(info_image, file = "/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_8_2016_ville_qc/Metadata/Metadata_Landsat_8_ville_de_qc_2016.txt")
 
 
-#####TEST 4 : Collection d'images #######
+#### Changement de plan: Il y a un algo ecrit par un auteur (voir note 14 avril 2021). Donc ici pour l'instant seulement telechargement des
+### Metadonnees
+library(tidyverse)
+library(reticulate)
+library(rgee)
+ee_Initialize()
 
-ic_l5 <- ee$ImageCollection("LANDSAT/LC08/C01/T1")$
-  filterBounds(secteur_ville_qc)$
-  filterDate("2011-01-01", "2011-12-31")
+image_2015 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2015/Images")
+for (i in 1:length(image_2015))
+{
+  image_2015[i] <- str_remove(image_2015[i], ".tif")
+  image_2015[i] <- paste0("LANDSAT/LC08/C01/T1_SR/", image_2015[i])
+}
 
-#avec ces informations, il est possible de calculer le TOA (quoiqu'il semble déjà fait par GEE, on peut comparer cette méthode avec)
-
+image_landsat <- ee$Image(image_2015[i])
 
 library(raster)
 str_name<-'/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_8_2016_ville_qc/Images/Ville_de_qc_2016/LANDSAT_LC08_C01_T1_LC08_013027_20160415.tif' 
