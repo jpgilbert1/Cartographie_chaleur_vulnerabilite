@@ -172,8 +172,10 @@ write.table(info_image, file = "/Users/jean-philippegilbert/Documents/Universit�
 library(tidyverse)
 library(reticulate)
 library(rgee)
+library(plyr)
 ee_Initialize()
 
+#pour 2015
 image_2015 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2015/Images")
 for (i in 1:length(image_2015))
 {
@@ -181,7 +183,145 @@ for (i in 1:length(image_2015))
   image_2015[i] <- paste0("LANDSAT/LC08/C01/T1_SR/", image_2015[i])
 }
 
-image_landsat <- ee$Image(image_2015[i])
+for (i in 1:length(image_2015))
+{
+  image_landsat <- ee$Image(image_2015[i])
+  metadata <- image_landsat$getInfo()
+  metadata <- metadata$properties
+  if(i == 1)
+  {
+    df <- data.frame(matrix(metadata, nrow=1, byrow=TRUE))
+  }else
+  {
+    df <- rbind(df,data.frame(matrix(metadata, nrow=1, byrow=TRUE)))
+  }
+}
+colnames(df) <- names(metadata)
+save(df, file = "/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2015/Metadata/Metadata_2015.rda")
+
+#pour 2016
+image_2016 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2016/Images")
+for (i in 1:length(image_2016))
+{
+  image_2016[i] <- str_remove(image_2016[i], ".tif")
+  image_2016[i] <- paste0("LANDSAT/LC08/C01/T1_SR/", image_2016[i])
+}
+
+for (i in 1:length(image_2016))
+{
+  image_landsat <- ee$Image(image_2016[i])
+  metadata <- image_landsat$getInfo()
+  metadata <- metadata$properties
+  if(i == 1)
+  {
+    df <- data.frame(matrix(metadata, nrow=1, byrow=TRUE))
+  }else
+  {
+    df <- rbind(df,data.frame(matrix(metadata, nrow=1, byrow=TRUE)))
+  }
+}
+colnames(df) <- names(metadata)
+save(df, file = "/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2016/Metadata/Metadata_2016.rda")
+
+#pour 2017
+image_2017 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2017/Images")
+for (i in 1:length(image_2017))
+{
+  image_2017[i] <- str_remove(image_2017[i], ".tif")
+  image_2017[i] <- paste0("LANDSAT/LC08/C01/T1_SR/", image_2017[i])
+}
+
+for (i in 1:length(image_2017))
+{
+  image_landsat <- ee$Image(image_2017[i])
+  metadata <- image_landsat$getInfo()
+  metadata <- metadata$properties
+  if(i == 1)
+  {
+    df <- data.frame(matrix(metadata, nrow=1, byrow=TRUE))
+  }else
+  {
+    df <- rbind(df,data.frame(matrix(metadata, nrow=1, byrow=TRUE)))
+  }
+}
+colnames(df) <- names(metadata)
+save(df, file = "/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2017/Metadata/Metadata_2017.rda")
+
+#2018
+image_2018 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2018/Images")
+for (i in 1:length(image_2018))
+{
+  image_2018[i] <- str_remove(image_2018[i], ".tif")
+  image_2018[i] <- paste0("LANDSAT/LC08/C01/T1_SR/", image_2018[i])
+}
+
+for (i in 1:length(image_2018))
+{
+  image_landsat <- ee$Image(image_2018[i])
+  metadata <- image_landsat$getInfo()
+  metadata <- metadata$properties
+  if(i == 1)
+  {
+    df <- data.frame(matrix(metadata, nrow=1, byrow=TRUE))
+    colnames(df) <- names(metadata)
+  }else
+  {
+    df_2 <- data.frame(matrix(metadata, nrow=1, byrow=TRUE))
+    colnames(df_2) <- names(metadata)
+    df <- rbind.fill(df,df_2)
+  }
+}
+#colnames(df) <- names(metadata)
+save(df, file = "/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2018/Metadata/Metadata_2018.rda")
+
+#pour 2019
+image_2019 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2019/Images")
+for (i in 1:length(image_2019))
+{
+  image_2019[i] <- str_remove(image_2019[i], ".tif")
+  image_2019[i] <- paste0("LANDSAT/LC08/C01/T1_SR/", image_2019[i])
+}
+
+for (i in 1:length(image_2019))
+{
+  image_landsat <- ee$Image(image_2019[i])
+  metadata <- image_landsat$getInfo()
+  metadata <- metadata$properties
+  if(i == 1)
+  {
+    df <- data.frame(matrix(metadata, nrow=1, byrow=TRUE))
+  }else
+  {
+    df <- rbind(df,data.frame(matrix(metadata, nrow=1, byrow=TRUE)))
+  }
+}
+colnames(df) <- names(metadata)
+save(df, file = "/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2019/Metadata/Metadata_2019.rda")
+
+#pour 2020
+image_2020 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2020/Images")
+for (i in 1:length(image_2020))
+{
+  image_2020[i] <- str_remove(image_2020[i], ".tif")
+  image_2020[i] <- paste0("LANDSAT/LC08/C01/T1_SR/", image_2020[i])
+}
+
+for (i in 1:length(image_2020))
+{
+  image_landsat <- ee$Image(image_2020[i])
+  metadata <- image_landsat$getInfo()
+  metadata <- metadata$properties
+  if(i == 1)
+  {
+    df <- data.frame(matrix(metadata, nrow=1, byrow=TRUE))
+  }else
+  {
+    df <- rbind(df,data.frame(matrix(metadata, nrow=1, byrow=TRUE)))
+  }
+}
+colnames(df) <- names(metadata)
+save(df, file = "/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2020/Metadata/Metadata_2020.rda")
+
 
 library(raster)
 str_name<-'/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_8_2016_ville_qc/Images/Ville_de_qc_2016/LANDSAT_LC08_C01_T1_LC08_013027_20160415.tif' 
