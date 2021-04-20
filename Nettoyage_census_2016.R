@@ -216,4 +216,13 @@ for(i in 1:nrow(liste_ad))
   print(i)
 }
 
+AD_BC_modif_format_shp_fin_df <- as.data.frame(AD_BC_modif_format_shp_fin)
+names(AD_BC_modif_format_shp_fin_df)[names(AD_BC_modif_format_shp_fin_df) == "1"] <- "NOM_GEO"
+rownames(AD_BC_modif_format_shp_fin_df) <- NULL
+
+save(AD_BC_modif_format_shp_fin_df, file = '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Stat_can_2016/Colombie_Britannique/98-401-X2016044_COLOMBIE_BRITANNIQUE_fra_CSV/Stats_can_ad_BC.rda')
+write.csv(AD_BC_modif_format_shp_fin_df, file = '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Stat_can_2016/Colombie_Britannique/98-401-X2016044_COLOMBIE_BRITANNIQUE_fra_CSV/Stats_can_ad_BC.csv')
+
+rm(list=ls())
+gc()
 
