@@ -1,4 +1,5 @@
 #####Lectures du fichier d'AD######
+#### QC ####
 library(dplyr)
 
 AD_qc <- read.csv(file = '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Stat_can_2016/Quebec/98-401-X2016044_QUEBEC_fra_CSV/98-401-X2016044_QUEBEC_Francais_CSV_data.csv')
@@ -121,52 +122,13 @@ rownames(AD_qc_modif_format_shp_fin_df) <- NULL
 save(AD_qc_modif_format_shp_fin_df, file = '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Stat_can_2016/Quebec/98-401-X2016044_QUEBEC_fra_CSV/Stats_can_ad_qc.rda')
 write.csv(AD_qc_modif_format_shp_fin_df, file = '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Stat_can_2016/Quebec/98-401-X2016044_QUEBEC_fra_CSV/Stats_can_ad_qc.csv')
 
+rm(list=ls())
+gc()
 
-test <- AD_qc_modif_format_shp[AD_qc_modif_format_shp$NOM_GÉO == 24010019,]
-row.names(test) <- test$DIM..Profil.des.aires.de.diffusion..2247.
+#Suffit de faire la meme chose pour chacun dossier.
 
-test <- test[,c(1,4)]
-test2 <- rbind(c(24010019,24010019), test)
+#### Colombie-Britannique ####
 
-test2 <- t(as.data.frame(test2))
-test2 <- test2[2,]
-test3 <- rbind(test2, test2)
+library(dplyr)
 
-test3 <- as.data.frame(test3)
-
-row.names(AD_qc_modif_format_shp) <- AD_qc_modif_format_shp$DIM..Profil.des.aires.de.diffusion..2247.
-#for (i in 1:nrow(AD_qc_modif))
-#{
-#  if(AD_qc_modif$Membre.ID..Profil.des.aires.de.diffusion..2247.[i] %in% c(35:38))
-#  {
-#    AD_qc_modif$DIM..Profil.des.aires.de.diffusion..2247.[i] <- paste('Répartition (%) de la population', AD_qc_modif$DIM..Profil.des.aires.de.diffusion..2247.[i], sep= " ")
-#  }else if(AD_qc_modif$Membre.ID..Profil.des.aires.de.diffusion..2247.[i] %in% c(45:50)){
-#    AD_qc_modif$DIM..Profil.des.aires.de.diffusion..2247.[i] <- paste('Autre logement attenant', AD_qc_modif$DIM..Profil.des.aires.de.diffusion..2247.[i], sep= " ")
-#  }else if(AD_qc_modif$Membre.ID..Profil.des.aires.de.diffusion..2247.[i] %in% c(51:56))
-#  {
-#    AD_qc_modif$DIM..Profil.des.aires.de.diffusion..2247.[i] <- paste('Ménages privés selon la taille du ménage', AD_qc_modif$DIM..Profil.des.aires.de.diffusion..2247.[i], sep= " ")
-#  }else if(AD_qc_modif$Membre.ID..Profil.des.aires.de.diffusion..2247.[i] %in% c(59:67))
-#  {
-#    AD_qc_modif$DIM..Profil.des.aires.de.diffusion..2247.[i] <- paste('État matrimonial pour la population âgée de 15 ans et plus', AD_qc_modif$DIM..Profil.des.aires.de.diffusion..2247.[i], sep= " ")
-#  }else if(AD_qc_modif$Membre.ID..Profil.des.aires.de.diffusion..2247.[i] %in% c(68:72))
-#  {
-#    AD_qc_modif$DIM..Profil.des.aires.de.diffusion..2247.[i] <- paste('Familles de recensement dans les ménages privés selon la taille de la famille', AD_qc_modif$DIM..Profil.des.aires.de.diffusion..2247.[i], sep= " ")
-#  }else if(AD_qc_modif$Membre.ID..Profil.des.aires.de.diffusion..2247.[i] %in% c(100:104))
-#  {
-#    AD_qc_modif$DIM..Profil.des.aires.de.diffusion..2247.[i] <- paste('Connaissance des langues officielles', AD_qc_modif$DIM..Profil.des.aires.de.diffusion..2247.[i], sep= " ")
-#  }else if(AD_qc_modif$Membre.ID..Profil.des.aires.de.diffusion..2247.[i] %in% c(692:707))
-#  {
-#    AD_qc_modif$DIM..Profil.des.aires.de.diffusion..2247.[i] <- paste('Tranches de revenu total en 2015 pour la population âgée de 15 ans et plus', AD_qc_modif$DIM..Profil.des.aires.de.diffusion..2247.[i], sep= " ")
-#  }
-#  else if(AD_qc_modif$Membre.ID..Profil.des.aires.de.diffusion..2247.[i] %in% c(760:779))
-#  {
-#    AD_qc_modif$DIM..Profil.des.aires.de.diffusion..2247.[i] <- paste('Tranches de revenu total du ménage en 2015 pour les ménages privés', AD_qc_modif$DIM..Profil.des.aires.de.diffusion..2247.[i], sep= " ")
-#  }
-#}
-
-
-
-save(AD_qc_modif, file = '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Stat_can_2016/Quebec/98-401-X2016044_QUEBEC_fra_CSV/AD_qc_modif.rda')
-
-write.csv(test, file = '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Stat_can_2016/Quebec/98-401-X2016044_QUEBEC_fra_CSV/AD_qc_modif.csv')
-#AD_qc_modif <- AD_qc_modif[!(AD_qc_modif$CODE_GÉO..LDR. == 24 ),]
+AD_BC <- read.csv(file = '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Stat_can_2016/Quebec/98-401-X2016044_QUEBEC_fra_CSV/98-401-X2016044_QUEBEC_Francais_CSV_data.csv')
