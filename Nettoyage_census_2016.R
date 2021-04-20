@@ -61,9 +61,29 @@ AD_qc_modif <- AD_qc_modif[order(AD_qc_modif$NOM_GÉO, AD_qc_modif$Membre.ID..Pr
 save(AD_qc_modif, file = '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Stat_can_2016/Quebec/98-401-X2016044_QUEBEC_fra_CSV/AD_qc_modif.rda')
 
 #Donc pour arcGIS, on met le nom de la variable en rowname, on garde que l'effectif et le code de l'AD
-AD_qc_modif_format_shp <- subset(AD_qc_modif_ajout_genre_fem, select = -c(Masc, Fem))
+AD_qc_modif_format_shp <- subset(AD_qc_modif, select = -c(TGN, TGN_FL, INDICATEUR_QUALITÉ_DONNÉES,CODE_GÉO_ALT,
+                                                          Membre.ID..Profil.des.aires.de.diffusion..2247.,
+                                                          Notes..Profil.des.aires.de.diffusion..2247.))
+
+#a place de faire une loop tres longue sur les donnees, faire une fonction qui fait ce que l'on veut et ensuite appliquer
+#la fonction avec un lapply.
+#ajout_v prend une colonme en argument, regarde si le premier caractère est une lettre ou un chiffre.
+#si c'est un chiffre, il va ajouter 'V_' devant le chiffre. Si c'est une lettre, ne touche pas.
+ajout_v <- function(df){
+  if(!is.na(as.numeric(substring(df, 1, 1))))
+  {
+    df <- paste('V_',df, sep= "")
+  }else
+  {
+    df <- df
+  }
+}
+
+AD_qc_modif_format_shp$DIM..Profil.des.aires.de.diffusion..2247. <- lapply(AD_qc_modif_format_shp$DIM..Profil.des.aires.de.diffusion..2247., ajout_v)
 
 
+
+row.names(AD_qc_modif_format_shp) <- AD_qc_modif_format_shp$DIM..Profil.des.aires.de.diffusion..2247.
 #for (i in 1:nrow(AD_qc_modif))
 #{
 #  if(AD_qc_modif$Membre.ID..Profil.des.aires.de.diffusion..2247.[i] %in% c(35:38))
