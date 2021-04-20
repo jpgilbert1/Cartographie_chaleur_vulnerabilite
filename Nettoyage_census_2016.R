@@ -62,26 +62,77 @@ save(AD_qc_modif, file = '/Users/jean-philippegilbert/Documents/Université Lava
 
 #Donc pour arcGIS, on met le nom de la variable en rowname, on garde que l'effectif et le code de l'AD
 AD_qc_modif_format_shp <- subset(AD_qc_modif, select = -c(TGN, TGN_FL, INDICATEUR_QUALITÉ_DONNÉES,CODE_GÉO_ALT,
-                                                          Membre.ID..Profil.des.aires.de.diffusion..2247.,
+                                                          
                                                           Notes..Profil.des.aires.de.diffusion..2247.))
 
 #a place de faire une loop tres longue sur les donnees, faire une fonction qui fait ce que l'on veut et ensuite appliquer
 #la fonction avec un lapply.
-#ajout_v prend une colonme en argument, regarde si le premier caractère est une lettre ou un chiffre.
+#ajout_v prend une colonne_a_changer, qui est la colonne \ changer, regarde si le premier caractère est une lettre ou un chiffre.
+#id_member sert a verifier si l'id_member est entre 760 et 779, pour eviter les doublons. 
 #si c'est un chiffre, il va ajouter 'V_' devant le chiffre. Si c'est une lettre, ne touche pas.
-ajout_v <- function(df){
-  if(!is.na(as.numeric(substring(df, 1, 1))))
+ajout_v <- function(colonne_a_changer, id_member){
+  if(id_member %in% 760:779)
   {
-    df <- paste('V_',df, sep= "")
+    colonne_a_changer <- paste('VV_',colonne_a_changer, sep= "")
+  }
+  else if(!is.na(as.numeric(substring(colonne_a_changer, 1, 1))))
+  {
+    colonne_a_changer <- paste('V_',colonne_a_changer, sep= "")
   }else
   {
-    df <- df
+    colonne_a_changer <- colonne_a_changer
   }
 }
 
-AD_qc_modif_format_shp$DIM..Profil.des.aires.de.diffusion..2247. <- lapply(AD_qc_modif_format_shp$DIM..Profil.des.aires.de.diffusion..2247., ajout_v)
+#Applique fonction sur le dataframe
+AD_qc_modif_format_shp$DIM..Profil.des.aires.de.diffusion..2247. <- mapply(ajout_v , AD_qc_modif_format_shp$DIM..Profil.des.aires.de.diffusion..2247., AD_qc_modif_format_shp$Membre.ID..Profil.des.aires.)
+
+#Creer une liste des AD
+library(dplyr)
+liste_ad <- as.data.frame(AD_qc_modif_format_shp$NOM_GÉO)
+liste_ad <- distinct(liste_ad)
+
+#Creation d'un nouveau dataframe donc les noms sont en columne et les lignes sont les effectifs (un peu long a rouler)
+for(i in 1:nrow(liste_ad))
+{
+  tempo <- AD_qc_modif_format_shp[AD_qc_modif_format_shp$NOM_GÉO == liste_ad[i,],]
+  row.names(tempo) <- tempo$DIM..Profil.des.aires.de.diffusion..2247.
+  tempo <- tempo[,c(1,4)]
+  tempo2 <- rbind(c(liste_ad[i,],liste_ad[i,]), tempo)
+  tempo2 <- t(as.data.frame(tempo2))
+  tempo2 <- tempo2[2,]
+  
+  if(i == 1)
+  {
+    AD_qc_modif_format_shp_fin <- tempo2
+  }else
+  {
+    AD_qc_modif_format_shp_fin <- rbind(AD_qc_modif_format_shp_fin, tempo2)
+  }
+  print(i)
+}
+
+#Clean le dataframe un peu
+AD_qc_modif_format_shp_fin_df <- as.data.frame(AD_qc_modif_format_shp_fin)
+names(AD_qc_modif_format_shp_fin_df)[names(AD_qc_modif_format_shp_fin_df) == "1"] <- "NOM_GEO"
+rownames(AD_qc_modif_format_shp_fin_df) <- NULL
+
+#le dataframe devrait etre bon pour aller dans ArcGIS
+save(AD_qc_modif_format_shp_fin_df, file = '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Stat_can_2016/Quebec/98-401-X2016044_QUEBEC_fra_CSV/Stats_can_ad_qc.rda')
+write.csv(AD_qc_modif_format_shp_fin_df, file = '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Stat_can_2016/Quebec/98-401-X2016044_QUEBEC_fra_CSV/Stats_can_ad_qc.csv')
 
 
+test <- AD_qc_modif_format_shp[AD_qc_modif_format_shp$NOM_GÉO == 24010019,]
+row.names(test) <- test$DIM..Profil.des.aires.de.diffusion..2247.
+
+test <- test[,c(1,4)]
+test2 <- rbind(c(24010019,24010019), test)
+
+test2 <- t(as.data.frame(test2))
+test2 <- test2[2,]
+test3 <- rbind(test2, test2)
+
+test3 <- as.data.frame(test3)
 
 row.names(AD_qc_modif_format_shp) <- AD_qc_modif_format_shp$DIM..Profil.des.aires.de.diffusion..2247.
 #for (i in 1:nrow(AD_qc_modif))
