@@ -327,3 +327,105 @@ write.csv(AD_on_modif_format_shp_fin_df, file = '/Users/jean-philippegilbert/Doc
 rm(list=ls())
 gc()
 
+
+####Prairies####
+
+library(dplyr)
+
+AD_prairies <- read.csv(file = '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Stat_can_2016/Prairie/98-401-X2016044_PRAIRIES_fra_CSV/98-401-X2016044_PRAIRIES_Francais_CSV_data.csv')
+
+
+AD_prairies_modif<-AD_prairies[!(AD_prairies$CODE_GÉO..LDR. == 1 |  AD_prairies$CODE_GÉO..LDR. == 35),]
+AD_prairies_modif <- AD_prairies_modif[!(AD_prairies_modif$NIVEAU_GÉO == 2),]
+AD_prairies_modif <- AD_prairies_modif[!(AD_prairies_modif$NIVEAU_GÉO == 3),]
+AD_prairies_modif <- AD_prairies_modif[,-(1:3)]
+
+
+liste_a_garder <- c(1,4,6,8:33,42,43,51:56,58,78,79,80,87,100,105,662,663,665,693, 695:707, 725,742,743,760:779,836,847,1148,1324,1337,1644,1683:1697)
+
+AD_prairies_modif <- AD_prairies_modif[which(AD_prairies_modif$Membre.ID..Profil.des.aires.de.diffusion..2247. %in% liste_a_garder),]
+
+names(AD_prairies_modif)[names(AD_prairies_modif) == "Dim..Sexe..3...Membre.ID...1...Total...Sexe" ] <- "Tot"
+names(AD_prairies_modif)[names(AD_prairies_modif) == "Dim..Sexe..3...Membre.ID...2...Sexe.masculin"] <- "Masc"
+names(AD_prairies_modif)[names(AD_prairies_modif) == "Dim..Sexe..3...Membre.ID...3...Sexe.féminin" ] <- "Fem"
+
+AD_prairies_modif$Tot[AD_prairies_modif$Tot == "..."] <- NA
+AD_prairies_modif$Fem[AD_prairies_modif$Fem == "..."] <- NA
+AD_prairies_modif$Masc[AD_prairies_modif$Masc == "..."] <- NA
+
+AD_prairies_modif_ajout_genre <- AD_prairies_modif[AD_prairies_modif$Membre.ID..Profil.des.aires.de.diffusion..2247. == 8,]
+AD_prairies_modif_ajout_genre_tot <- AD_prairies_modif_ajout_genre
+AD_prairies_modif_ajout_genre_tot$DIM..Profil.des.aires.de.diffusion..2247. <- "Total - Groupes d'âge et âge moyen de la population - Données intégrales (100 %)"
+AD_prairies_modif_ajout_genre_tot <- subset(AD_prairies_modif_ajout_genre_tot, select = -c(Masc, Fem))
+
+AD_prairies_modif_ajout_genre_mas <- AD_prairies_modif_ajout_genre
+AD_prairies_modif_ajout_genre_mas$DIM..Profil.des.aires.de.diffusion..2247. <- "Masculin - Groupes d'âge et âge moyen de la population - Données intégrales (100 %)"
+AD_prairies_modif_ajout_genre_mas$Tot <- AD_prairies_modif_ajout_genre_mas$Masc
+AD_prairies_modif_ajout_genre_mas <- subset(AD_prairies_modif_ajout_genre_mas, select = -c(Masc, Fem))
+
+AD_prairies_modif_ajout_genre_fem <- AD_prairies_modif_ajout_genre 
+AD_prairies_modif_ajout_genre_fem$DIM..Profil.des.aires.de.diffusion..2247. <- "Feminin - Groupes d'âge et âge moyen de la population - Données intégrales (100 %)"
+AD_prairies_modif_ajout_genre_fem$Tot <-AD_prairies_modif_ajout_genre_fem$Fem
+AD_prairies_modif_ajout_genre_fem <- subset(AD_prairies_modif_ajout_genre_fem, select = -c(Masc, Fem))
+
+AD_prairies_modif <- subset(AD_prairies_modif, select = -c(Masc, Fem))
+AD_prairies_modif <- AD_prairies_modif[!(AD_prairies_modif$DIM..Profil.des.aires.de.diffusion..2247. == "Total - Groupes d'âge et âge moyen de la population - Données intégrales (100 %)"),]
+
+AD_prairies_modif <- do.call('rbind', list(AD_prairies_modif,AD_prairies_modif_ajout_genre_tot,AD_prairies_modif_ajout_genre_mas,AD_prairies_modif_ajout_genre_fem))
+AD_prairies_modif <- AD_prairies_modif[order(AD_prairies_modif$NOM_GÉO, AD_prairies_modif$Membre.ID..Profil.des.aires.de.diffusion..2247.),]
+
+save(AD_prairies_modif, file = '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Stat_can_2016/Prairie/98-401-X2016044_PRAIRIES_fra_CSV/AD_prairies_modif.rda')
+
+AD_prairies_modif_format_shp <- subset(AD_prairies_modif, select = -c(TGN, TGN_FL, INDICATEUR_QUALITÉ_DONNÉES,CODE_GÉO_ALT,
+                                                          
+                                                          Notes..Profil.des.aires.de.diffusion..2247.))
+
+ajout_v <- function(colonne_a_changer, id_member){
+  if(id_member %in% 760:779)
+  {
+    colonne_a_changer <- paste('VV_',colonne_a_changer, sep= "")
+  }
+  else if(!is.na(as.numeric(substring(colonne_a_changer, 1, 1))))
+  {
+    colonne_a_changer <- paste('V_',colonne_a_changer, sep= "")
+  }else
+  {
+    colonne_a_changer <- colonne_a_changer
+  }
+}
+
+AD_prairies_modif_format_shp$DIM..Profil.des.aires.de.diffusion..2247. <- mapply(ajout_v , AD_prairies_modif_format_shp$DIM..Profil.des.aires.de.diffusion..2247., AD_prairies_modif_format_shp$Membre.ID..Profil.des.aires.)
+
+library(dplyr)
+liste_ad <- as.data.frame(AD_prairies_modif_format_shp$NOM_GÉO)
+liste_ad <- distinct(liste_ad)
+
+for(i in 1:nrow(liste_ad))
+{
+  tempo <- AD_prairies_modif_format_shp[AD_prairies_modif_format_shp$NOM_GÉO == liste_ad[i,],]
+  row.names(tempo) <- tempo$DIM..Profil.des.aires.de.diffusion..2247.
+  tempo <- tempo[,c(1,4)]
+  tempo2 <- rbind(c(liste_ad[i,],liste_ad[i,]), tempo)
+  tempo2 <- t(as.data.frame(tempo2))
+  tempo2 <- tempo2[2,]
+  
+  if(i == 1)
+  {
+    AD_prairies_modif_format_shp_fin <- tempo2
+  }else
+  {
+    AD_prairies_modif_format_shp_fin <- rbind(AD_prairies_modif_format_shp_fin, tempo2)
+  }
+  print(i)
+}
+
+AD_prairies_modif_format_shp_fin_df <- as.data.frame(AD_prairies_modif_format_shp_fin)
+names(AD_prairies_modif_format_shp_fin_df)[names(AD_prairies_modif_format_shp_fin_df) == "1"] <- "NOM_GEO"
+rownames(AD_prairies_modif_format_shp_fin_df) <- NULL
+
+save(AD_prairies_modif_format_shp_fin_df, file = '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Stat_can_2016/Prairie/98-401-X2016044_PRAIRIES_fra_CSV/Stats_can_ad_prairies.rda')
+write.csv(AD_prairies_modif_format_shp_fin_df, file = '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Stat_can_2016/Prairie/98-401-X2016044_PRAIRIES_fra_CSV/Stats_can_ad_prairies.csv')
+
+rm(list=ls())
+gc()
+
