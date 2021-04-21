@@ -429,3 +429,93 @@ write.csv(AD_prairies_modif_format_shp_fin_df, file = '/Users/jean-philippegilbe
 rm(list=ls())
 gc()
 
+####Atlantiques####
+
+
+library(dplyr)
+
+AD_atlan <- read.csv(file = '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Stat_can_2016/Provinces_Atlantiques/98-401-X2016044_ATLANTIQUE_fra_CSV/98-401-X2016044_ATLANTIQUE_Francais_CSV_data.csv')
+
+
+AD_atlan_modif<-AD_atlan[!(AD_atlan$CODE_GÉO..LDR. == 1 |  AD_atlan$CODE_GÉO..LDR. == 10),]
+AD_atlan_modif <- AD_atlan_modif[!(AD_atlan_modif$NIVEAU_GÉO == 2),]
+AD_atlan_modif <- AD_atlan_modif[!(AD_atlan_modif$NIVEAU_GÉO == 3),]
+AD_atlan_modif <- AD_atlan_modif[,-(1:3)]
+
+liste_a_garder <- c(1,4,6,8:33,42,43,51:56,58,78,79,80,87,100,105,662,663,665,693, 695:707, 725,742,743,760:779,836,847,1148,1324,1337,1644,1683:1697)
+
+AD_atlan_modif <- AD_atlan_modif[which(AD_atlan_modif$Membre.ID..Profil.des.aires.de.diffusion..2247. %in% liste_a_garder),]
+
+names(AD_atlan_modif)[names(AD_atlan_modif) == "Dim..Sexe..3...Membre.ID...1...Total...Sexe" ] <- "Tot"
+names(AD_atlan_modif)[names(AD_atlan_modif) == "Dim..Sexe..3...Membre.ID...2...Sexe.masculin"] <- "Masc"
+names(AD_atlan_modif)[names(AD_atlan_modif) == "Dim..Sexe..3...Membre.ID...3...Sexe.féminin" ] <- "Fem"
+
+AD_atlan_modif$Tot[AD_atlan_modif$Tot == "..."] <- NA
+AD_atlan_modif$Fem[AD_atlan_modif$Fem == "..."] <- NA
+AD_atlan_modif$Masc[AD_atlan_modif$Masc == "..."] <- NA
+
+AD_atlan_modif_ajout_genre <- AD_atlan_modif[AD_atlan_modif$Membre.ID..Profil.des.aires.de.diffusion..2247. == 8,]
+AD_atlan_modif_ajout_genre_tot <- AD_atlan_modif_ajout_genre
+AD_atlan_modif_ajout_genre_tot$DIM..Profil.des.aires.de.diffusion..2247. <- "Total - Groupes d'âge et âge moyen de la population - Données intégrales (100 %)"
+AD_atlan_modif_ajout_genre_tot <- subset(AD_atlan_modif_ajout_genre_tot, select = -c(Masc, Fem))
+
+AD_atlan_modif_ajout_genre_mas <- AD_atlan_modif_ajout_genre
+AD_atlan_modif_ajout_genre_mas$DIM..Profil.des.aires.de.diffusion..2247. <- "Masculin - Groupes d'âge et âge moyen de la population - Données intégrales (100 %)"
+AD_atlan_modif_ajout_genre_mas$Tot <- AD_atlan_modif_ajout_genre_mas$Masc
+AD_atlan_modif_ajout_genre_mas <- subset(AD_atlan_modif_ajout_genre_mas, select = -c(Masc, Fem))
+
+AD_atlan_modif_ajout_genre_fem <- AD_atlan_modif_ajout_genre 
+AD_atlan_modif_ajout_genre_fem$DIM..Profil.des.aires.de.diffusion..2247. <- "Feminin - Groupes d'âge et âge moyen de la population - Données intégrales (100 %)"
+AD_atlan_modif_ajout_genre_fem$Tot <-AD_atlan_modif_ajout_genre_fem$Fem
+AD_atlan_modif_ajout_genre_fem <- subset(AD_atlan_modif_ajout_genre_fem, select = -c(Masc, Fem))
+
+AD_atlan_modif <- subset(AD_atlan_modif, select = -c(Masc, Fem))
+AD_atlan_modif <- AD_atlan_modif[!(AD_atlan_modif$DIM..Profil.des.aires.de.diffusion..2247. == "Total - Groupes d'âge et âge moyen de la population - Données intégrales (100 %)"),]
+
+AD_atlan_modif <- do.call('rbind', list(AD_atlan_modif,AD_atlan_modif_ajout_genre_tot,AD_atlan_modif_ajout_genre_mas,AD_atlan_modif_ajout_genre_fem))
+AD_atlan_modif <- AD_atlan_modif[order(AD_atlan_modif$NOM_GÉO, AD_atlan_modif$Membre.ID..Profil.des.aires.de.diffusion..2247.),]
+
+save(AD_atlan_modif, file = '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Stat_can_2016/Provinces_Atlantiques/98-401-X2016044_ATLANTIQUE_fra_CSV/AD_atlan_modif.rda')
+
+AD_atlan_modif_format_shp <- subset(AD_atlan_modif, select = -c(TGN, TGN_FL, INDICATEUR_QUALITÉ_DONNÉES,CODE_GÉO_ALT,
+                                                                      
+                                                                      Notes..Profil.des.aires.de.diffusion..2247.))
+
+ajout_v <- function(colonne_a_changer, id_member){
+  if(id_member %in% 760:779)
+  {
+    colonne_a_changer <- paste('VV_',colonne_a_changer, sep= "")
+  }
+  else if(!is.na(as.numeric(substring(colonne_a_changer, 1, 1))))
+  {
+    colonne_a_changer <- paste('V_',colonne_a_changer, sep= "")
+  }else
+  {
+    colonne_a_changer <- colonne_a_changer
+  }
+}
+
+AD_atlan_modif_format_shp$DIM..Profil.des.aires.de.diffusion..2247. <- mapply(ajout_v , AD_atlan_modif_format_shp$DIM..Profil.des.aires.de.diffusion..2247., AD_atlan_modif_format_shp$Membre.ID..Profil.des.aires.)
+
+library(dplyr)
+liste_ad <- as.data.frame(AD_atlan_modif_format_shp$NOM_GÉO)
+liste_ad <- distinct(liste_ad)
+
+for(i in 1:nrow(liste_ad))
+{
+  tempo <- AD_atlan_modif_format_shp[AD_atlan_modif_format_shp$NOM_GÉO == liste_ad[i,],]
+  row.names(tempo) <- tempo$DIM..Profil.des.aires.de.diffusion..2247.
+  tempo <- tempo[,c(1,4)]
+  tempo2 <- rbind(c(liste_ad[i,],liste_ad[i,]), tempo)
+  tempo2 <- t(as.data.frame(tempo2))
+  tempo2 <- tempo2[2,]
+  
+  if(i == 1)
+  {
+    AD_atlan_modif_format_shp_fin <- tempo2
+  }else
+  {
+    AD_atlan_modif_format_shp_fin <- rbind(AD_atlan_modif_format_shp_fin, tempo2)
+  }
+  print(i)
+}
