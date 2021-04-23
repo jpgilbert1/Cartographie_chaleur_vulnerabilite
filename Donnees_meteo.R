@@ -1,6 +1,7 @@
 ####Téléchargement des données météo de EC #####
 #lit une liste de station ayant des donnees d'environnement canada de 2013 a 2020
 library(filesstrings)
+library(dplyr)
 liste_station <- read.csv('/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Donnees_meteo/Station_Inventory_EN_modif.csv')
 
 #Ici, fait appel au command line pour telecharger les donnees des stations automatiquement
@@ -24,3 +25,41 @@ for (i in 1:nrow(liste_station))
   }
   
 }
+
+##une fois que les données sont téléchargées, il faut déterminer quelles sont les dates des vagues de chaleur, pour aller chercher les Landsat adéquat
+donnees_meteo <- list.files(path = '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Donnees_meteo/Donnees_2015_2020/', full.names = TRUE)
+file <- read.csv(donnees_meteo[1])
+
+nb_de_jour =0
+fichier_vague_de_chaleur <- file[1,]
+for (i in 1:length(donnees_meteo))
+{
+  file <- read.csv(donnees_meteo[i])
+  file <- na_if(file, "")
+  for (j in 1:nrow(file))
+  {
+    if (file$Mois[j] %in% 4:11 && !is.na(file$Temp.max...C.[j]) && !is.na(file$Temp.min...C.[j]))
+    {
+      if(as.numeric(sub(",",".",file$Temp.max...C.[j])) >= 30 && as.numeric(sub(",",".",file$Temp.min...C.[j])) >= 20)
+      {
+        nb_de_jour <- nb_de_jour +1
+      }else
+        {
+          nb_de_jour <- 0
+        }
+      if(nb_de_jour >=3)
+      {
+        print(file$Nom.de.la.Station[j])
+        print(file$Date.Heure[j])
+        print(file$Temp.max...C.[j])
+        print(i)
+        print(j)
+        fichier_vague_de_chaleur <- rbind(fichier_vague_de_chaleur, file[j,])
+      }
+    }
+  }
+}
+
+
+
+
