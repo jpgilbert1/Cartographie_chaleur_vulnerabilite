@@ -71,6 +71,7 @@ test <- merge(fichier_vague_de_chaleur, liste_station[,1:3], by.x = "ID.climatol
 
 #Ne donne pas beaucoup d'images, donc peut-etre prendre des images avec une température de jour en haut de 30 au lieu 
 #de prendre la définition de vagues de chaleur de INSPQ
+#C'est le même principe que la boucle plus haut, mais avec moins de conditions.
 
 donnees_meteo <- list.files(path = '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Donnees_meteo/Donnees_2015_2020/', full.names = TRUE)
 file <- read.csv(donnees_meteo[1]) 
@@ -103,5 +104,6 @@ for (i in 1:length(donnees_meteo))
   print(i)
 }
 
+#Comme beaucoup de doublons, il les enlever.
 fichier_journees_chaudes <- fichier_journees_chaudes[!duplicated(fichier_journees_chaudes$Date.Heure), ]
 fichier_journees_chaudes <- fichier_journees_chaudes[-1,]
