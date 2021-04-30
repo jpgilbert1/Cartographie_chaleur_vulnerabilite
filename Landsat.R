@@ -176,7 +176,7 @@ library(plyr)
 ee_Initialize()
 
 #pour 2015
-image_2015 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2015/Images")
+image_2015 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_GEE/GEE_QC_2015")
 for (i in 1:length(image_2015))
 {
   image_2015[i] <- str_remove(image_2015[i], ".tif")
@@ -197,10 +197,10 @@ for (i in 1:length(image_2015))
   }
 }
 colnames(df) <- names(metadata)
-save(df, file = "/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2015/Metadata/Metadata_2015.rda")
+save(df, file = "/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_GEE/GEE_QC_2015/Metadata/Metadata_2015.rda")
 
 #pour 2016
-image_2016 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2016/Images")
+image_2016 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_GEE/GEE_QC_2016")
 for (i in 1:length(image_2016))
 {
   image_2016[i] <- str_remove(image_2016[i], ".tif")
@@ -217,14 +217,16 @@ for (i in 1:length(image_2016))
     df <- data.frame(matrix(metadata, nrow=1, byrow=TRUE))
   }else
   {
-    df <- rbind(df,data.frame(matrix(metadata, nrow=1, byrow=TRUE)))
+    df_2 <- data.frame(matrix(metadata, nrow=1, byrow=TRUE))
+    colnames(df_2) <- names(metadata)
+    df <- rbind.fill(df,df_2)
   }
 }
 colnames(df) <- names(metadata)
-save(df, file = "/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2016/Metadata/Metadata_2016.rda")
+save(df, file = "/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_GEE/GEE_QC_2016/Metadata/Metadata_2016.rda")
 
 #pour 2017
-image_2017 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2017/Images")
+image_2017 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_GEE/GEE_QC_2017")
 for (i in 1:length(image_2017))
 {
   image_2017[i] <- str_remove(image_2017[i], ".tif")
@@ -245,10 +247,10 @@ for (i in 1:length(image_2017))
   }
 }
 colnames(df) <- names(metadata)
-save(df, file = "/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2017/Metadata/Metadata_2017.rda")
+save(df, file = "/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_GEE/GEE_QC_2017/Metadata/Metadata_2017.rda")
 
 #2018
-image_2018 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2018/Images")
+image_2018 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_GEE/GEE_QC_2018")
 for (i in 1:length(image_2018))
 {
   image_2018[i] <- str_remove(image_2018[i], ".tif")
@@ -272,7 +274,7 @@ for (i in 1:length(image_2018))
   }
 }
 #colnames(df) <- names(metadata)
-save(df, file = "/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2018/Metadata/Metadata_2018.rda")
+save(df, file = "/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_GEE/GEE_QC_2018/Metadata/Metadata_2018.rda")
 
 #pour 2019
 image_2019 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2019/Images")
