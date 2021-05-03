@@ -277,7 +277,7 @@ for (i in 1:length(image_2018))
 save(df, file = "/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_GEE/GEE_QC_2018/Metadata/Metadata_2018.rda")
 
 #pour 2019
-image_2019 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2019/Images")
+image_2019 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_GEE/GEE_QC_2019")
 for (i in 1:length(image_2019))
 {
   image_2019[i] <- str_remove(image_2019[i], ".tif")
@@ -298,10 +298,10 @@ for (i in 1:length(image_2019))
   }
 }
 colnames(df) <- names(metadata)
-save(df, file = "/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2019/Metadata/Metadata_2019.rda")
+save(df, file = "/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_GEE/GEE_QC_2019/Metadata/Metadata_2019.rda")
 
 #pour 2020
-image_2020 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2020/Images")
+image_2020 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_GEE/GEE_QC_2020")
 for (i in 1:length(image_2020))
 {
   image_2020[i] <- str_remove(image_2020[i], ".tif")
@@ -322,9 +322,4 @@ for (i in 1:length(image_2020))
   }
 }
 colnames(df) <- names(metadata)
-save(df, file = "/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/VQC_2020/Metadata/Metadata_2020.rda")
-
-
-library(raster)
-str_name<-'/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_8_2016_ville_qc/Images/Ville_de_qc_2016/LANDSAT_LC08_C01_T1_LC08_013027_20160415.tif' 
-imported_raster=raster(str_name)
+save(df, file = "/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_GEE/GEE_QC_2020/Metadata/Metadata_2020.rda")
