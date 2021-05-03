@@ -183,7 +183,7 @@ for (i in 1:length(image_2015))
   image_2015[i] <- paste0("LANDSAT/LC08/C01/T1_SR/", image_2015[i])
 }
 
-for (i in 1:length(image_2015))
+for (i in 1:(length(image_2015)-2))
 {
   image_landsat <- ee$Image(image_2015[i])
   metadata <- image_landsat$getInfo()
@@ -207,7 +207,7 @@ for (i in 1:length(image_2016))
   image_2016[i] <- paste0("LANDSAT/LC08/C01/T1_SR/", image_2016[i])
 }
 
-for (i in 1:length(image_2016))
+for (i in 1:(length(image_2016) -2))
 {
   image_landsat <- ee$Image(image_2016[i])
   metadata <- image_landsat$getInfo()
@@ -215,6 +215,7 @@ for (i in 1:length(image_2016))
   if(i == 1)
   {
     df <- data.frame(matrix(metadata, nrow=1, byrow=TRUE))
+    colnames(df) <- names(metadata)
   }else
   {
     df_2 <- data.frame(matrix(metadata, nrow=1, byrow=TRUE))
