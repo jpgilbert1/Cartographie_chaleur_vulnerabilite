@@ -102,6 +102,115 @@ load("Metadata/Metadata_2020.rda")
 df_2020 <- fichier_moins_10(df)
 reprojection_raster(df_2020)
 
+####### Une fois les donnees reprojecter, il faut ensuite determiner si l'image correspond effectivement a un moment de vague de chaleur spatialement
+library(rgdal)
+library(maptools)
+library(ggplot2)
+library(rgeos)
+load()
+setwd('/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Shp_file/Region_administrativ/30218')
+
+municipalite <- readOGR(dsn =".",layer =  "sda_regio_20k_2012_s_poly", stringsAsFactors = FALSE)
+#plot(municipalite)
+
+#summary(municipalite@data)
+
+#shp_df <- broom::tidy(municipalite, region = "MUS_NM_MUN")
+#lapply(shp_df, class)
+#head(shp_df)
+
+#cnames <- aggregate(cbind(long, lat) ~ id, data=shp_df, FUN=mean)
+#map <- ggplot() + geom_polygon(data = municipalite, aes(x = long, y = lat, group = group), colour = "black", fill = NA)
+#map + geom_text(data = cnames, aes(x = long, y = lat, label = id), size = 4) + theme_void()
+
+setwd('/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_GEE/GEE_QC_2020/Reproject')
+Landsat_image_1 <- raster("LC08_017028_20200812.tif")
+#plot(Landsat_image_1)
+#Landsat_image_1_df <- as.data.frame(Landsat_image_1, xy = TRUE)
+
+plot(municipalite)
+plot(Landsat_image_1, 
+     add = TRUE)
+
+images_bonnes_2015 <- list.files("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_GEE/GEE_QC_2015/Reproject/Bonne", full.names = TRUE)
+images_bonnes_2016 <- list.files("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_GEE/GEE_QC_2016/Reproject/Bonne", full.names = TRUE)
+images_bonnes_2017 <- list.files("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_GEE/GEE_QC_2017/Reproject/Bonne", full.names = TRUE)
+images_bonnes_2018 <- list.files("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_GEE/GEE_QC_2018/Reproject/Bonne", full.names = TRUE)
+images_bonnes_2019 <- list.files("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_GEE/GEE_QC_2019/Reproject/Bonne", full.names = TRUE)
+images_bonnes_2020 <- list.files("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_GEE/GEE_QC_2020/Reproject/Bonne", full.names = TRUE)
+combine_images_bonne <- c(images_bonnes_2015,images_bonnes_2016, images_bonnes_2016, images_bonnes_2017, images_bonnes_2018, images_bonnes_2019, images_bonnes_2020)
+
+
+plot(municipalite)
+plot(raster(combine_images_bonne[1]), 
+     add = TRUE)
+plot(raster(combine_images_bonne[2]),
+     add = TRUE)
+plot(raster(combine_images_bonne[3]),
+     add = TRUE)
+plot(raster(combine_images_bonne[4]),
+     add = TRUE)
+plot(raster(combine_images_bonne[5]),
+     add = TRUE)
+plot(raster(combine_images_bonne[6]),
+     add = TRUE)
+plot(raster(combine_images_bonne[7]),
+     add = TRUE)
+plot(raster(combine_images_bonne[8]),
+     add = TRUE)
+plot(raster(combine_images_bonne[9]),
+     add = TRUE)
+plot(raster(combine_images_bonne[10]),
+     add = TRUE)
+plot(raster(combine_images_bonne[11]),
+     add = TRUE)
+plot(raster(combine_images_bonne[12]),
+     add = TRUE)
+plot(raster(combine_images_bonne[13]),
+     add = TRUE)
+plot(raster(combine_images_bonne[14]),
+     add = TRUE)
+plot(raster(combine_images_bonne[15]),
+     add = TRUE)
+plot(raster(combine_images_bonne[16]),
+     add = TRUE)
+plot(raster(combine_images_bonne[17]),
+     add = TRUE)
+plot(raster(combine_images_bonne[18]),
+     add = TRUE)
+plot(raster(combine_images_bonne[19]),
+     add = TRUE)
+plot(raster(combine_images_bonne[20]),
+     add = TRUE)
+plot(raster(combine_images_bonne[21]),
+     add = TRUE)
+plot(raster(combine_images_bonne[22]),
+     add = TRUE)
+plot(raster(combine_images_bonne[23]),
+     add = TRUE)
+plot(raster(combine_images_bonne[24]),
+      add = TRUE)
+plot(raster(combine_images_bonne[25]),
+     add = TRUE)
+plot(raster(combine_images_bonne[26]),
+     add = TRUE)
+plot(raster(combine_images_bonne[27]),
+     add = TRUE)
+plot(raster(combine_images_bonne[28]),
+     add = TRUE)
+plot(raster(combine_images_bonne[29]),
+     add = TRUE)
+plot(raster(combine_images_bonne[30]),
+     add = TRUE)
+plot(raster(combine_images_bonne[31]),
+     add = TRUE)
+plot(raster(combine_images_bonne[32]),
+     add = TRUE)
+plot(raster(combine_images_bonne[33]),
+     add = TRUE)
+plot(raster(combine_images_bonne[34]),
+     add = TRUE)
+
 
 crs(Image_Landsat)
 res(Image_GAIA_ref)
