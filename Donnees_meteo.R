@@ -105,5 +105,9 @@ for (i in 1:length(donnees_meteo))
 }
 
 #Comme beaucoup de doublons, il les enlever.
+save(fichier_journees_chaudes, file="/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Donnees_meteo/fichier_journee_chaude_doublons.rda")
+
 fichier_journees_chaudes <- fichier_journees_chaudes[!duplicated(fichier_journees_chaudes$Date.Heure), ]
 fichier_journees_chaudes <- fichier_journees_chaudes[-1,]
+
+save(fichier_journees_chaudes, file="/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Donnees_meteo/fichier_journee_chaude_sans_doublons.rda")
