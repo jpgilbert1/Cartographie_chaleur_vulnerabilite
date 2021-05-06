@@ -15,159 +15,8 @@ ee_check()
 library(reticulate)
 library(rgee)
 
-# 1. Initialize the Python Environment  
-#Ceci est mon authentification : 4/1AY0e-g7028VXxck9xkcmq0Ob-xX6YMkIpGbFPej03T1i-f1oLIH_ztbdZpo #
-ee_Initialize()
 
-# 2. Install geemap in the same Python ENV that use rgee
-py_install("geemap")
-gm <- import("geemap")
-
-#ee_install_upgrade()
-
-#Premier test. Telechargement et enregistrement d'une image Landsat 8 Tier 1 DN. Il s'agit d'une image recouvrant une partie de l'estrie
-#pour le 12 juin 2017
-
-secteur <- c(-72.4988076171875,46.630943299130344,
-             -72.2461220703125,46.630943299130344,
-             -72.2461220703125,46.71574964520758,
-             -72.4988076171875,46.71574964520758,
-             -72.4988076171875,46.630943299130344)
-
-test <- ee$Image('LANDSAT/LC08/C01/T1/LC08_014028_20170612')
-task_img <- ee$batch$Export$image$toDrive(image = test,
-                                          region = secteur)
-
-task_img$start()
-ee_monitoring(task_img)
-
-l <- ee$Feature(test)
-
-#Deuxieme test : creation d'un dictionnaire pour les images Landsat de la ville de Qc en 2016 (date du plus recent recensement?)
-
-secteur_ville_qc <- c(-71.34950798924484,46.728698813821076,
-                      -71.01991814549484,46.728698813821076,
-                      -71.01991814549484,46.901625009007994,
-                      -71.34950798924484,46.901625009007994,
-                      -71.34950798924484,46.728698813821076)
-
-dictionnaire_image_qc <- c('LANDSAT/LC08/C01/T1/LC08_013027_20160211',
-'LANDSAT/LC08/C01/T1/LC08_013027_20160227',
-'LANDSAT/LC08/C01/T1/LC08_013027_20160314',
-'LANDSAT/LC08/C01/T1/LC08_013027_20160330',
-'LANDSAT/LC08/C01/T1/LC08_013027_20160415',
-'LANDSAT/LC08/C01/T1/LC08_013027_20160501',
-'LANDSAT/LC08/C01/T1/LC08_013027_20160602',
-'LANDSAT/LC08/C01/T1/LC08_013027_20160618',
-'LANDSAT/LC08/C01/T1/LC08_013027_20160704',
-'LANDSAT/LC08/C01/T1/LC08_013027_20160720',
-'LANDSAT/LC08/C01/T1/LC08_013027_20160805',
-'LANDSAT/LC08/C01/T1/LC08_013027_20160821',
-'LANDSAT/LC08/C01/T1/LC08_013027_20160906',
-'LANDSAT/LC08/C01/T1/LC08_013027_20160922',
-'LANDSAT/LC08/C01/T1/LC08_013027_20161211',
-'LANDSAT/LC08/C01/T1/LC08_013028_20160211',
-'LANDSAT/LC08/C01/T1/LC08_013028_20160227',
-'LANDSAT/LC08/C01/T1/LC08_013028_20160314',
-'LANDSAT/LC08/C01/T1/LC08_013028_20160330',
-'LANDSAT/LC08/C01/T1/LC08_013028_20160415',
-'LANDSAT/LC08/C01/T1/LC08_013028_20160501',
-'LANDSAT/LC08/C01/T1/LC08_013028_20160618',
-'LANDSAT/LC08/C01/T1/LC08_013028_20160704',
-'LANDSAT/LC08/C01/T1/LC08_013028_20160720',
-'LANDSAT/LC08/C01/T1/LC08_013028_20160805',
-'LANDSAT/LC08/C01/T1/LC08_013028_20160821',
-'LANDSAT/LC08/C01/T1/LC08_013028_20160906',
-'LANDSAT/LC08/C01/T1/LC08_013028_20160922',
-'LANDSAT/LC08/C01/T1/LC08_013028_20161008',
-'LANDSAT/LC08/C01/T1/LC08_013028_20161211',
-'LANDSAT/LC08/C01/T1/LC08_014027_20160101',
-'LANDSAT/LC08/C01/T1/LC08_014027_20160117',
-'LANDSAT/LC08/C01/T1/LC08_014027_20160202',
-'LANDSAT/LC08/C01/T1/LC08_014027_20160218',
-'LANDSAT/LC08/C01/T1/LC08_014027_20160305',
-'LANDSAT/LC08/C01/T1/LC08_014027_20160321',
-'LANDSAT/LC08/C01/T1/LC08_014027_20160406',
-'LANDSAT/LC08/C01/T1/LC08_014027_20160524',
-'LANDSAT/LC08/C01/T1/LC08_014027_20160625',
-'LANDSAT/LC08/C01/T1/LC08_014027_20160711',
-'LANDSAT/LC08/C01/T1/LC08_014027_20160727',
-'LANDSAT/LC08/C01/T1/LC08_014027_20160812',
-'LANDSAT/LC08/C01/T1/LC08_014027_20160913',
-'LANDSAT/LC08/C01/T1/LC08_014027_20160929',
-'LANDSAT/LC08/C01/T1/LC08_014027_20161015')
-
-for (i in 1:length(dictionnaire_image_qc))
-{
-  image_landsat <- ee$Image(dictionnaire_image_qc[i])
-  task_img <- ee$batch$Export$image$toDrive(image = image_landsat,
-                                            region = secteur_ville_qc,
-                                            fileNamePrefix = dictionnaire_image_qc[i],
-                                            folder = 'Ville_de_qc_2016')
-  task_img$start()$
-  ee_monitoring(task_img)
-  if(i == 2)
-  {
-    break
-  }
-}
-
-#####Test 3: Telechargement des images avec un pretraitement (Cloud Cover et ML et AL pour le calcul de TOA) #########
-image_landsat <- ee$Image(dictionnaire_image_qc[1])
-couvert_nuageux <- image_landsat$get('CLOUD_COVER')
-couvert_nuageux <- couvert_nuageux$getInfo()
-
-multiplicative_rescaling <- image_landsat$get('RADIANCE_MULT_BAND_10')
-multiplicative_rescaling <- multiplicative_rescaling$getInfo()
-
-additive_rescaling <- image_landsat$get('RADIANCE_ADD_BAND_10')
-additive_rescaling <- additive_rescaling$getInfo()
-
-nom_image <- image_landsat$get("system:index")
-nom_image <- nom_image$getInfo()
-
-rm(info_image)
-for (i in 1:length(dictionnaire_image_qc))
-{
-  image_landsat <- ee$Image(dictionnaire_image_qc[i])$select('B10')
-  couvert_nuageux <- image_landsat$get('CLOUD_COVER')
-  couvert_nuageux <- couvert_nuageux$getInfo()
-  if(couvert_nuageux < 5)
-  {
-    print(couvert_nuageux)
-
-    nom_image <- image_landsat$get("system:index")
-    nom_image <- nom_image$getInfo()
-    
-    multiplicative_rescaling <- image_landsat$get('RADIANCE_MULT_BAND_10')
-    multiplicative_rescaling <- multiplicative_rescaling$getInfo()
-    
-    additive_rescaling <- image_landsat$get('RADIANCE_ADD_BAND_10')
-    additive_rescaling <- additive_rescaling$getInfo()
-    
-    task_img <- ee$batch$Export$image$toDrive(image = image_landsat,
-                                              region = secteur_ville_qc,
-                                              fileNamePrefix = dictionnaire_image_qc[i],
-                                              folder = 'Ville_de_qc_2016',
-                                              fileFormat = 'GEO_TIFF')
-    task_img$start()
-    #$ee_monitoring(task_img)
-    
-    if (isFALSE(exists('info_image') && is.data.frame(get('info_image'))))
-    {
-      info_image <- data.frame(nom_image,multiplicative_rescaling, additive_rescaling, couvert_nuageux, stringsAsFactors=FALSE)
-    }else
-    {
-      info_image <- rbind(info_image, c(nom_image,multiplicative_rescaling, additive_rescaling, couvert_nuageux))
-    }
-  }
-}
-
-
-write.table(info_image, file = "/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_8_2016_ville_qc/Metadata/Metadata_Landsat_8_ville_de_qc_2016.txt")
-
-
-#### Changement de plan: Il y a un algo ecrit par un auteur (voir note 14 avril 2021). Donc ici pour l'instant seulement telechargement des
+#### Changement de plan: Il y a un algo ecrit par un auteur (voir note 14 avril 2021). Donc ici pour l'instant seulement telechargement des (Ermedia)
 ### Metadonnees
 library(tidyverse)
 library(reticulate)
@@ -324,3 +173,224 @@ for (i in 1:length(image_2020))
 }
 colnames(df) <- names(metadata)
 save(df, file = "/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Ermedia/GEE_QC_2020/Metadata/Metadata_2020.rda")
+
+#Les données ont été évalué, et chaque bonne image a été garder. Je vais donc créer des métadonnées avec les bonnes images pour pouvoir extraire
+#de nouvelles images avec une méthode différente afin de comparer.
+
+library(tidyverse)
+meta_data_bonne_image <- function(path_fichier, path_metadonnees,path_output)
+{
+  bonne_images <- list.files(path=path_fichier)
+  bonne_images <- str_remove(bonne_images, '.tif')
+  load(path_metadonnees)
+  df <- df[which(df$`system:index` %in% bonne_images),]
+  save(df, file = path_output)
+}
+
+meta_data_bonne_image("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Ermedia/GEE_QC_2015/Reproject/Bonne",
+                      '/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Ermedia/GEE_QC_2015/Metadata/Metadata_2015.rda',
+                      '/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Ermedia/GEE_QC_2015/Metadata/Metadata_2015_bonne.rda')
+
+meta_data_bonne_image("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Ermedia/GEE_QC_2016/Reproject/Bonne",
+                      '/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Ermedia/GEE_QC_2016/Metadata/Metadata_2016.rda',
+                      '/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Ermedia/GEE_QC_2016/Metadata/Metadata_2016_bonne.rda')
+
+meta_data_bonne_image("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Ermedia/GEE_QC_2017/Reproject/Bonne",
+                      '/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Ermedia/GEE_QC_2017/Metadata/Metadata_2017.rda',
+                      '/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Ermedia/GEE_QC_2017/Metadata/Metadata_2017_bonne.rda')
+
+meta_data_bonne_image("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Ermedia/GEE_QC_2018/Reproject/Bonne",
+                      '/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Ermedia/GEE_QC_2018/Metadata/Metadata_2018.rda',
+                      '/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Ermedia/GEE_QC_2018/Metadata/Metadata_2018_bonne.rda')
+
+meta_data_bonne_image("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Ermedia/GEE_QC_2019/Reproject/Bonne",
+                      '/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Ermedia/GEE_QC_2019/Metadata/Metadata_2019.rda',
+                      '/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Ermedia/GEE_QC_2019/Metadata/Metadata_2019_bonne.rda')
+
+meta_data_bonne_image("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Ermedia/GEE_QC_2020/Reproject/Bonne",
+                      '/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Ermedia/GEE_QC_2020/Metadata/Metadata_2020.rda',
+                      '/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Ermedia/GEE_QC_2020/Metadata/Metadata_2020_bonne.rda')
+
+#####Methode wang 2020
+library("readxl")
+
+Image_dispo_2015 <-read_excel('/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Info_landsat_2015.xlsx')
+Image_dispo_2016 <-read_excel('/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Info_landsat_2016.xlsx')
+Image_dispo_2017 <-read_excel('/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Info_landsat_2017.xlsx')
+Image_dispo_2018 <-read_excel('/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Info_landsat_2018.xlsx')
+Image_dispo_2019 <-read_excel('/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Info_landsat_2019.xlsx')
+Image_dispo_2020 <-read_excel('/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Info_landsat_2020.xlsx')
+
+extraction_date <- function(df)
+{
+  df$Year <- as.numeric(substr(df$Date, start = 1, stop = 4))
+  df$Month <- as.numeric(substr(df$Date, start = 6, stop = 7))
+  df$Day <- as.numeric(substr(df$Date, start = 9, stop = 10))
+  return(df)
+}
+
+Image_dispo_2015 <- extraction_date(Image_dispo_2015)
+Image_dispo_2016 <- extraction_date(Image_dispo_2016)
+Image_dispo_2017 <- extraction_date(Image_dispo_2017)
+Image_dispo_2018 <- extraction_date(Image_dispo_2018)
+Image_dispo_2019 <- extraction_date(Image_dispo_2019)
+Image_dispo_2020 <- extraction_date(Image_dispo_2020)
+
+Image_dispo <- do.call('rbind', list(Image_dispo_2015,Image_dispo_2016,Image_dispo_2017,Image_dispo_2018,Image_dispo_2019,Image_dispo_2020))
+Image_journee_chaude <- Image_dispo[1,]
+for (i in 1:nrow(Image_dispo))
+{
+ for (j in 1:nrow(fichier_journees_chaudes))
+ {
+   if(as.character(Image_dispo$Date[i]) == fichier_journees_chaudes$Date.Heure[j])
+   {
+     Image_journee_chaude <- rbind(Image_journee_chaude, Image_dispo[i,])
+   }
+ }
+  print(i)
+}
+Image_journee_chaude <- Image_journee_chaude[-1,]
+
+write.csv(Image_journee_chaude, '/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Image_chaude.csv')
+
+##Mettre toutes les images de la même date ensemble, dans un meme fichier
+library(filesstrings)
+
+image_wang_2015 <- list.files(path = "/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2015"
+                              , pattern = "tif")
+image_wang_2015_full <- list.files(path = "/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2015"
+                              , pattern = "tif"
+                              ,full.names = TRUE)
+image_wang_2015 <- str_remove(image_wang_2015, '_LST.tif')
+
+
+for(i in 1:length(image_wang_2015))
+{
+  test <- Image_journee_chaude[which(Image_journee_chaude$Landsat_id %in% image_wang_2015[i] ), ] 
+  if(as.character(test$Date) %in% list.files(path = "/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2015"))
+  {
+    nom_dossier <- paste0("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2015/",as.character(test$Date))
+    file.move(image_wang_2015_full[i], nom_dossier)
+  }else
+  {
+    dir.create(paste0("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2015/",as.character(test$Date)))
+    nom_dossier <- paste0("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2015/",as.character(test$Date))
+    file.move(image_wang_2015_full[i], nom_dossier)
+  }
+}
+
+image_wang_2016 <- list.files(path = "/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2016"
+                              , pattern = "tif")
+image_wang_2016_full <- list.files(path = "/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2016"
+                                   , pattern = "tif"
+                                   ,full.names = TRUE)
+image_wang_2016 <- str_remove(image_wang_2016, '_LST.tif')
+
+
+for(i in 1:length(image_wang_2016))
+{
+  test <- Image_journee_chaude[which(Image_journee_chaude$Landsat_id %in% image_wang_2016[i] ), ] 
+  if(as.character(test$Date) %in% list.files(path = "/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2016"))
+  {
+    nom_dossier <- paste0("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2016/",as.character(test$Date))
+    file.move(image_wang_2016_full[i], nom_dossier)
+  }else
+  {
+    dir.create(paste0("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2016/",as.character(test$Date)))
+    nom_dossier <- paste0("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2016/",as.character(test$Date))
+    file.move(image_wang_2016_full[i], nom_dossier)
+  }
+}
+
+image_wang_2017 <- list.files(path = "/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2017"
+                              , pattern = "tif")
+image_wang_2017_full <- list.files(path = "/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2017"
+                                   , pattern = "tif"
+                                   ,full.names = TRUE)
+image_wang_2017 <- str_remove(image_wang_2017, '_LST.tif')
+
+
+for(i in 1:length(image_wang_2017))
+{
+  test <- Image_journee_chaude[which(Image_journee_chaude$Landsat_id %in% image_wang_2017[i] ), ] 
+  if(as.character(test$Date) %in% list.files(path = "/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2017"))
+  {
+    nom_dossier <- paste0("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2017/",as.character(test$Date))
+    file.move(image_wang_2017_full[i], nom_dossier)
+  }else
+  {
+    dir.create(paste0("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2017/",as.character(test$Date)))
+    nom_dossier <- paste0("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2017/",as.character(test$Date))
+    file.move(image_wang_2017_full[i], nom_dossier)
+  }
+}
+
+image_wang_2018 <- list.files(path = "/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2018"
+                              , pattern = "tif")
+image_wang_2018_full <- list.files(path = "/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2018"
+                                   , pattern = "tif"
+                                   ,full.names = TRUE)
+image_wang_2018 <- str_remove(image_wang_2018, '_LST.tif')
+
+
+for(i in 1:length(image_wang_2018))
+{
+  test <- Image_journee_chaude[which(Image_journee_chaude$Landsat_id %in% image_wang_2018[i] ), ] 
+  if(as.character(test$Date) %in% list.files(path = "/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2018"))
+  {
+    nom_dossier <- paste0("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2018/",as.character(test$Date))
+    file.move(image_wang_2018_full[i], nom_dossier)
+  }else
+  {
+    dir.create(paste0("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2018/",as.character(test$Date)))
+    nom_dossier <- paste0("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2018/",as.character(test$Date))
+    file.move(image_wang_2018_full[i], nom_dossier)
+  }
+}
+
+image_wang_2019 <- list.files(path = "/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2019"
+                              , pattern = "tif")
+image_wang_2019_full <- list.files(path = "/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2019"
+                                   , pattern = "tif"
+                                   ,full.names = TRUE)
+image_wang_2019 <- str_remove(image_wang_2019, '_LST.tif')
+
+
+for(i in 1:length(image_wang_2019))
+{
+  test <- Image_journee_chaude[which(Image_journee_chaude$Landsat_id %in% image_wang_2019[i] ), ] 
+  if(as.character(test$Date) %in% list.files(path = "/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2019"))
+  {
+    nom_dossier <- paste0("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2019/",as.character(test$Date))
+    file.move(image_wang_2019_full[i], nom_dossier)
+  }else
+  {
+    dir.create(paste0("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2019/",as.character(test$Date)))
+    nom_dossier <- paste0("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2019/",as.character(test$Date))
+    file.move(image_wang_2019_full[i], nom_dossier)
+  }
+}
+
+image_wang_2020 <- list.files(path = "/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2020"
+                              , pattern = "tif")
+image_wang_2020_full <- list.files(path = "/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2020"
+                                   , pattern = "tif"
+                                   ,full.names = TRUE)
+image_wang_2020 <- str_remove(image_wang_2020, '_LST.tif')
+
+
+for(i in 1:length(image_wang_2020))
+{
+  test <- Image_journee_chaude[which(Image_journee_chaude$Landsat_id %in% image_wang_2020[i] ), ] 
+  if(as.character(test$Date) %in% list.files(path = "/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2020"))
+  {
+    nom_dossier <- paste0("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2020/",as.character(test$Date))
+    file.move(image_wang_2020_full[i], nom_dossier)
+  }else
+  {
+    dir.create(paste0("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2020/",as.character(test$Date)))
+    nom_dossier <- paste0("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2020/",as.character(test$Date))
+    file.move(image_wang_2020_full[i], nom_dossier)
+  }
+}
+
