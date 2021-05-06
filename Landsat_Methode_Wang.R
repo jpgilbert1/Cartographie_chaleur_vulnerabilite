@@ -2,8 +2,11 @@
 #nom de l'article : An Efficient Framework for Producing Landsat-Based Land Surface Temperature Data Using Google Earth Engine
 # même principe que Landsat_methode_ERIMA. De visuel, les images sont plus clean, et selon l'article de Wang, cette méthode est plus
 #accurate que celle d'Erima. Elle aussi elle est sur google earth engine. https://code.earthengine.google.com/?accept_repo=users/wangmmcug/landsat_psc_lst
-library("readxl")
 
+#Sur GEE, des fichiers de toutes les images pour la province de Qc a été fait, avec une couverture nuageuse de 10% et moins.
+
+
+library("readxl")
 Image_dispo_2015 <-read_excel('/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Info_landsat_2015.xlsx')
 Image_dispo_2016 <-read_excel('/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Info_landsat_2016.xlsx')
 Image_dispo_2017 <-read_excel('/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Info_landsat_2017.xlsx')
@@ -11,8 +14,18 @@ Image_dispo_2018 <-read_excel('/Users/jean-philippegilbert/Documents/Universite�
 Image_dispo_2019 <-read_excel('/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Info_landsat_2019.xlsx')
 Image_dispo_2020 <-read_excel('/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Info_landsat_2020.xlsx')
 
+
 extraction_date <- function(df)
-{
+{#' extraction_date
+#'
+#' @param df 
+#'extrait les dates de la colonne date et les met danss leur propre colone
+#'
+#' @return df avec trois nouveaux champs, Year, month et day
+#' @export
+#'
+#' @examples
+  
   df$Year <- as.numeric(substr(df$Date, start = 1, stop = 4))
   df$Month <- as.numeric(substr(df$Date, start = 6, stop = 7))
   df$Day <- as.numeric(substr(df$Date, start = 9, stop = 10))
@@ -26,8 +39,14 @@ Image_dispo_2018 <- extraction_date(Image_dispo_2018)
 Image_dispo_2019 <- extraction_date(Image_dispo_2019)
 Image_dispo_2020 <- extraction_date(Image_dispo_2020)
 
+#combine les fichiers ensemble
 Image_dispo <- do.call('rbind', list(Image_dispo_2015,Image_dispo_2016,Image_dispo_2017,Image_dispo_2018,Image_dispo_2019,Image_dispo_2020))
 Image_journee_chaude <- Image_dispo[1,]
+
+#va cherche le fichier qui est les journees chaudes, soit 30 celsius ou plus comme t maximal dans la journee
+load("/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Donnees_meteo/fichier_journee_chaude_sans_doublons.rda")
+
+#Dans le lot d'images, pas toutes les images correspondent a des journees chaudes, donc on ne les telecharges pas pour rien
 for (i in 1:nrow(Image_dispo))
 {
  for (j in 1:nrow(fichier_journees_chaudes))
@@ -43,7 +62,10 @@ Image_journee_chaude <- Image_journee_chaude[-1,]
 
 write.csv(Image_journee_chaude, '/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Image_chaude.csv')
 
-##Mettre toutes les images de la même date ensemble, dans un meme fichier
+###########Telechargement des photos sur GEE, PAS DANS R #########
+
+
+#Mettre toutes les images de la même date ensemble, dans un meme fichier
 library(filesstrings)
 
 image_wang_2015 <- list.files(path = "/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Landsat_methode_Wang/Wang_2015"
