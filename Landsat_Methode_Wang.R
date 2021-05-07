@@ -206,3 +206,62 @@ for(i in 1:length(image_wang_2020))
   }
 }
 
+#Metadonnees
+#sortir un excel des métadonnées pour le rapport.
+library(tidyverse)
+library(reticulate)
+library(rgee)
+library(plyr)
+ee_Initialize()
+
+image_2015 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Wang_2015/")
+image_2015_full <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Wang_2015", full.names = TRUE)
+Retrouver_id_Landsat <- function(path,path_full)
+{
+  df_id_Landsat <- "l"
+  for(i in 1:length(path))
+  {
+    if(!is.na(as.numeric(substr(path[i], 1, 2))))
+    {
+      nom_dossier <- list.files(path=paste0(path_full[i]), pattern = ".tif")
+      for(j in 1:length(nom_dossier))
+      {
+        df_id_Landsat <- c(df_id_Landsat, nom_dossier[j])
+      }
+    }
+  }
+  df_id_Landsat <- df_id_Landsat[-1]
+  return(df_id_Landsat)
+}
+
+
+image_2015 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Wang_2015/")
+image_2015_full <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Wang_2015", full.names = TRUE)
+ID_2015 <- Retrouver_id_Landsat(image_2015,image_2015_full)
+
+image_2016 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Wang_2016/")
+image_2016_full <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Wang_2016", full.names = TRUE)
+ID_2016 <- Retrouver_id_Landsat(image_2016,image_2016_full)
+
+image_2017 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Wang_2017/")
+image_2017_full <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Wang_2017", full.names = TRUE)
+ID_2017 <- Retrouver_id_Landsat(image_2017,image_2017_full)
+
+image_2018 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Wang_2018/")
+image_2018_full <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Wang_2018", full.names = TRUE)
+ID_2018 <- Retrouver_id_Landsat(image_2018,image_2018_full)
+
+image_2019 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Wang_2019/")
+image_2019_full <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Wang_2019", full.names = TRUE)
+ID_2019 <- Retrouver_id_Landsat(image_2019,image_2019_full)
+
+image_2020 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Wang_2020/")
+image_2020_full <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Wang_2020", full.names = TRUE)
+ID_2020 <- Retrouver_id_Landsat(image_2020,image_2020_full)
+
+id_2015_2020 <- c(ID_2015, ID_2016, ID_2017, ID_2018, ID_2019, ID_2020)
+
+for (i in 1:length(id_2015_2020))
+{
+  id_2015_2020[i] <- paste0("LANDSAT/LC08/C01/T1_SR/", substr(id_2015_2020[i], 1, 16))
+}
