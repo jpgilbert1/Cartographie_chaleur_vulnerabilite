@@ -1,11 +1,26 @@
-####Téléchargement des données météo de EC #####
-#lit une liste de station ayant des donnees d'environnement canada de 2010 a 2020
+---
+title: "Données météos"
+author: "Jean-Philippe Gilbert"
+date: "22/06/2021"
+output: html_document
+---
+
+```{r message=FALSE}
 library(filesstrings)
 library(dplyr)
-liste_station <- read.csv('/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Donnees_meteo/Station Inventory EN_modif_2.csv')
+```
 
-#Ici, fait appel au command line pour telecharger les donnees des stations automatiquement
-#info : https://drive.google.com/drive/folders/1WJCDEU34c60IfOnG4rv5EPZ4IhhW9vZH
+## Téléchargement des données météo de EC
+lit une liste de station ayant des donnees d'environnement canada de 2010 a 2020 sauvegarder localement
+
+```{r}
+liste_station <- read.csv('/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Donnees_meteo/Station Inventory EN_modif_2.csv')
+```
+
+Ici, fait appel au command line pour telecharger les donnees des stations automatiquement info : https://drive.google.com/drive/folders/1WJCDEU34c60IfOnG4rv5EPZ4IhhW9vZH
+
+
+```{r eval=FALSE}
 for (i in 1:nrow(liste_station))
 {
   debut <- 'for annee in `seq 2010 2020`;do for mois in `seq 1`;do wget --content-disposition "https://climat.meteo.gc.ca/climate_data/bulk_data_f.html?format=csv&stationID='
@@ -23,12 +38,14 @@ for (i in 1:nrow(liste_station))
   {
     file.move(fichiers[j], '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Donnees_meteo/Donnees_2010_2020')     
   }
-  
 }
+```
 
-##une fois que les données sont téléchargées, il faut déterminer quelles sont les dates des vagues de chaleur, pour aller chercher les Landsat adéquat
-#donc on se fit sur la definition de INSPQ : https://www.inspq.qc.ca/pdf/publications/1079_IndicateursVigieSanteChaleur.pdf
-#on on sort les dates 3 jours consecutf de journee chaude superieur a 30 et minimal superieur a 20.
+une fois que les données sont téléchargées, il faut déterminer quelles sont les dates des vagues de chaleur, pour aller chercher les Landsat adéquat
+donc on se fit sur la definition de INSPQ : https://www.inspq.qc.ca/pdf/publications/1079_IndicateursVigieSanteChaleur.pdf
+on on sort les dates 3 jours consecutf de journee chaude superieur a 30 et minimal superieur a 20.
+
+```{r eval=FALSE}
 
 donnees_meteo <- list.files(path = '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Donnees_meteo/Donnees_2010_2020/', full.names = TRUE)
 file <- read.csv(donnees_meteo[1]) 
@@ -75,11 +92,14 @@ write.csv(fichier_vague_de_chaleur,"/Users/jean-philippegilbert/Documents/Univer
 
 
 #test <- merge(fichier_vague_de_chaleur, liste_station[,1:3], by.x = "ID.climatologique" , by.y = "X.1")
+```
 
 
-#Ne donne pas beaucoup d'images, donc peut-etre prendre des images avec une température de jour en haut de 30 au lieu 
-#de prendre la définition de vagues de chaleur de INSPQ
-#C'est le même principe que la boucle plus haut, mais avec moins de conditions.
+Ne donne pas beaucoup d'images, donc peut-etre prendre des images avec une température de jour en haut de 30 au lieu 
+de prendre la définition de vagues de chaleur de INSPQ
+C'est le même principe que la boucle plus haut, mais avec moins de conditions.
+
+``` {r eval=FALSE}
 
 donnees_meteo <- list.files(path = '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Donnees_meteo/Donnees_2015_2020/', full.names = TRUE)
 file <- read.csv(donnees_meteo[1],stringsAsFactors = FALSE) 
@@ -112,8 +132,11 @@ for (i in 1:length(donnees_meteo))
   }
   print(i)
 }
+```
 
-#Comme beaucoup de doublons, il les enlever.
+Comme beaucoup de doublons, il les enlever.
+
+```{r eval=FALSE}
 fichier_journees_chaudes <- fichier_journees_chaudes[-1,]
 save(fichier_journees_chaudes, file="/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Donnees_meteo/fichier_journee_chaude_doublons.rda")
 
@@ -123,26 +146,11 @@ fichier_journees_chaudes <- fichier_journees_chaudes[!duplicated(fichier_journee
 
 
 save(fichier_journees_chaudes, file="/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Donnees_meteo/fichier_journee_chaude_sans_doublons.rda")
+```
 
-library(sf)
-fichier_journees_chaudes$Longitude..x. <-  str_replace(fichier_journees_chaudes$Longitude..x., ',', '.')
-fichier_journees_chaudes$Latitude..y. <-  str_replace(fichier_journees_chaudes$Latitude..y., ',', '.')
+Extraction des jours de vagues de chaleur selon la definition vague de chaleur EC.
 
-write.csv(fichier_journees_chaudes,"/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Donnees_meteo/fichier_journee_chaude_doublons.csv" )
-
-shape_file_station_meteo <- st_as_sf(fichier_journees_chaudes, coords = c("Longitude..x.", "Latitude..y."))
-
-
-library(rgdal)
-xy <- as.numeric(unlist(fichier_journees_chaudes[,c(1,2)]))
-spdf <- SpatialPointsDataFrame(coords = xy, data = fichier_journees_chaudes,
-                               proj4string = CRS("+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"))
-writeOGR(shape_file_station_meteo,  "/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Donnees_meteo/fichier_journee_chaude_sans_doublons.shp ", 
-         driver = "ESRI Shapefile")
-
-
-###Definition vague de chaleur EC.
-
+``` {r eval=FALSE}
 donnees_meteo <- list.files(path = '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Donnees_meteo/Donnees_2010_2020/', full.names = TRUE)
 file <- read.csv(donnees_meteo[1]) 
 
@@ -180,3 +188,4 @@ for (i in 1:length(donnees_meteo))
 fichier_vague_de_chaleur_ec <- fichier_vague_de_chaleur_ec[-1,]
 
 write.csv(fichier_vague_de_chaleur_ec ,"/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Donnees_meteo/fichier_vagues_de_chaleur_EC.csv" )
+```

@@ -2,9 +2,18 @@
 #Les fichiers ne sont pas sur la meme projection, donc reprojette selon les donnes du GAIA qui sont en long lat (Landsat en UTM)
 library("raster")
 
-setwd('/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Donnee_GAIA_Artificial_impervenous_surface')
-Image_GAIA_ref <- raster("GAIA_1985_2018_46_-074.tif")
+#setwd('/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Donnee_GAIA_Artificial_impervenous_surface')
+Image_GAIA_ref <- raster("/Users/jean-philippegilbert/Desktop/Test_qgis/LC80100262015194LGN01_LST.tif")
+test <- rasterToPoints(Image_GAIA_ref, spatial = TRUE)
 
+
+
+rgdal::writeOGR(obj=test,dsn = "/Users/jean-philippegilbert/Desktop/Test_qgis", layer = "test2",  driver="ESRI Shapefile") # this is in geographical projection
+
+library(gstat)
+
+gs <- gstat(formula=LC80100262015194LGN01_LST~1, locations=test, nmax=5, set=list(idp = 0))
+nn <- interpolate(Image_GAIA_ref, gs)
 
 fichier_moins_10 <- function(df)
 {

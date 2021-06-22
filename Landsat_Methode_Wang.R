@@ -303,3 +303,56 @@ for (i in 1:nrow(id_2015_2020))
 
 #c'etait moins long de copier coller les donnees dans un excel que de trouver un moyen de dealer avec toutes les lists.
 save(df,file = "/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Metadata_image_satellites.rda" )
+
+###J'ai ensuite manuellement regarder si chaque image était dans une journées chaude du fichier. 
+
+###Pour les metadonnees, je veux aussi juste les metadonnees des images chaudes que j'ai manuellement regarder
+image_2015 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Wang_2015_2020_journees_chaude/Wang_2015_journees_chaudes/")
+ID_2015<- str_remove(image_2015,"_LST.tif")
+fichier_excel_2015_2 <- read_excel(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Info_landsat_2015_part_2.xlsx",)
+ID_2015 <- merge(fichier_excel_2015_2, as_data_frame(ID_2015), by.x=("ID_1"), by.y = "value")
+
+image_2016 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Wang_2015_2020_journees_chaude/Wang_2016_journees_chaudes/")
+ID_2016<- str_remove(image_2016,"_LST.tif")
+fichier_excel_2016_2 <- read_excel(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Info_landsat_2016_part_2.xlsx",)
+ID_2016 <- merge(fichier_excel_2016_2, as_data_frame(ID_2016), by.x=("ID_1"), by.y = "value")
+
+image_2017 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Wang_2015_2020_journees_chaude/Wang_2017_journees_chaudes/")
+ID_2017<- str_remove(image_2017,"_LST.tif")
+fichier_excel_2017_2 <- read_excel(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Info_landsat_2017_part_2.xlsx",)
+ID_2017 <- merge(fichier_excel_2017_2, as_data_frame(ID_2017), by.x=("ID_1"), by.y = "value")
+
+image_2018 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Wang_2015_2020_journees_chaude/Wang_2018_journees_chaudes/")
+ID_2018<- str_remove(image_2018,"_LST.tif")
+fichier_excel_2018_2 <- read_excel(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Info_landsat_2018_part_2.xlsx",)
+ID_2018 <- merge(fichier_excel_2018_2, as_data_frame(ID_2018), by.x=("ID_1"), by.y = "value")
+
+image_2019 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Wang_2015_2020_journees_chaude/Wang_2019_journees_chaudes/")
+ID_2019<- str_remove(image_2019,"_LST.tif")
+fichier_excel_2019_2 <- read_excel(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Info_landsat_2019_part_2.xlsx",)
+ID_2019 <- merge(fichier_excel_2019_2, as_data_frame(ID_2019), by.x=("ID_1"), by.y = "value")
+
+image_2020 <- list.files(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Wang_2015_2020_journees_chaude/Wang_2020_journees_chaudes/")
+ID_2020<- str_remove(image_2020,"_LST.tif")
+fichier_excel_2020_2 <- read_excel(path="/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Landsat_methode_Wang/Info_landsat_2020_part_2.xlsx",)
+ID_2020 <- merge(fichier_excel_2020_2, as_data_frame(ID_2020), by.x=("ID_1"), by.y = "value")
+
+id_2015_2020 <- do.call("rbind", list(ID_2015, ID_2016, ID_2017, ID_2018, ID_2019, ID_2020))
+
+for (i in 1:nrow(id_2015_2020))
+{
+  image_landsat <- ee$Image(paste0("LANDSAT/LC08/C01/T1_SR/", id_2015_2020$ID_2[i]))
+  metadata <- image_landsat$getInfo()
+  metadata <- metadata$properties
+  if(i == 1)
+  {
+    df2 <- data.frame(matrix(metadata, nrow=1, byrow=TRUE))
+    colnames(df2) <- names(metadata)
+  }else
+  {
+    df_2 <- data.frame(matrix(metadata, nrow=1, byrow=TRUE))
+    colnames(df_2) <- names(metadata)
+    df2 <- rbind.fill(df2,df_2)
+  }
+}
+
