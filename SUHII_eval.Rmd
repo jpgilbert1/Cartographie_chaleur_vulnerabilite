@@ -1,0 +1,260 @@
+---
+title: "SUHII_eval"
+author: "Jean-Philippe Gilbert"
+date: "23/06/2021"
+output: html_document
+---
+
+```{r eval=FALSE}
+library(raster)
+library(rgdal)
+library(mgcv)
+```
+
+Ce fichier est un peu mélangé car il y a beaucoup de tests. Je vais faire de mon mieux pour tout décortiqué pour future JP.
+
+Je sais pas pourquoi mais ArcGIS n'aime pas quand les fichiers ne sont pas merger. Donc je merge les fichiers avec R ici.
+```{r eval=FALSE}
+image_1_isa <- raster("D:\\Universit? Laval\\Cartographie vuln?rabilit? vagues de chaleur accamblante - Documents\\General\\Data\\Impermeabilite_des_sols\\QC_part_1\\drive-download-20210517T132552Z-001\\myExportImageTask-0000000000-0000032768-002.tif")
+image_2_isa <- raster("D:\\Universit? Laval\\Cartographie vuln?rabilit? vagues de chaleur accamblante - Documents\\General\\Data\\Impermeabilite_des_sols\\QC_part_1\\drive-download-20210517T132552Z-001\\myExportImageTask-0000000000-0000065536.tif")
+image_4_isa <- raster("D:\\Universit? Laval\\Cartographie vuln?rabilit? vagues de chaleur accamblante - Documents\\General\\Data\\Impermeabilite_des_sols\\QC_part_2\\QC_part_2\\Qc_part_2-0000000000-0000032768.tif")
+image_3_isa <- raster("C:\\Users\\JPGIL11\\Desktop\\drive-download-20210525T131636Z-001\\Image4-0000000000-0000032768.tif")
+image_5_isa <- raster("D:\\Universit? Laval\\Cartographie vuln?rabilit? vagues de chaleur accamblante - Documents\\General\\Data\\Impermeabilite_des_sols\\Qc_part_5\\drive-download-20210526T115551Z-001\\image_3-0000000000-0000131072.tif")
+
+image_1_2<- merge(image_1_isa, image_2_isa, tolerance=0.05, filename="D:\\Universit? Laval\\Cartographie vuln?rabilit? vagues de chaleur accamblante - Documents\\General\\Data\\Impermeabilite_des_sols\\image_1_2.tif", overlap=TRUE, ext=NULL)
+image_1_2_3<- merge(image_1_2, image_3_isa, tolerance=0.05, filename="D:\\Universit? Laval\\Cartographie vuln?rabilit? vagues de chaleur accamblante - Documents\\General\\Data\\Impermeabilite_des_sols\\image_1_2_3.tif", overlap=TRUE, ext=NULL)
+image_1_2_3_4<- merge(image_1_2_3, image_4_isa, tolerance=0.05, filename="D:\\Universit? Laval\\Cartographie vuln?rabilit? vagues de chaleur accamblante - Documents\\General\\Data\\Impermeabilite_des_sols\\image_1_2_3_4.tif", overlap=TRUE, ext=NULL)
+image_1_2_3_4_5<- merge(image_1_2_3_4, image_5_isa, tolerance=0.05, filename="D:\\Universit? Laval\\Cartographie vuln?rabilit? vagues de chaleur accamblante - Documents\\General\\Data\\Impermeabilite_des_sols\\image_1_2_3_4_5.tif", overlap=TRUE, ext=NULL)
+image_1_2_3_4 <- raster("D:\\Universit? Laval\\Cartographie vuln?rabilit? vagues de chaleur accamblante - Documents\\General\\Data\\Impermeabilite_des_sols\\image_1_2_3_4.tif")
+folder_isa_long <- list.files("D:\\Universit? Laval\\Cartographie vuln?rabilit? vagues de chaleur accamblante - Documents\\General\\Data\\Impermeabilite_des_sols\\ISA_RMR\\ISA_R", pattern = ".tif", full.names = TRUE)
+folder_isa <- list.files("D:\\Universit? Laval\\Cartographie vuln?rabilit? vagues de chaleur accamblante - Documents\\General\\Data\\Impermeabilite_des_sols\\ISA_RMR\\ISA_R", pattern = ".tif")
+image_mtl <- raster('D:\\Universit? Laval\\Cartographie vuln?rabilit? vagues de chaleur accamblante - Documents\\General\\Data\\Impermeabilite_des_sols\\Montreal__180_norm_reclass_decou.tif')
+
+```
+
+
+
+LM  (Ne pas oublier de changer l'annee). LM fonctionne bien mais ce n'est pas le bout de code que l'on utilise car j'ai un code plus complet qui s'en vient.
+``` {r eval = FALSE}
+folder <- list.files("D:\\Universit? Laval\\Cartographie vuln?rabilit? vagues de chaleur accamblante - Documents\\General\\Data\\Landsat_methode_Wang\\Wang_2015_2020_journees_chaude\\Wang_2015_journees_chaudes\\RMR", full.names = TRUE)
+folder_court <- list.files("D:\\Universit? Laval\\Cartographie vuln?rabilit? vagues de chaleur accamblante - Documents\\General\\Data\\Landsat_methode_Wang\\Wang_2015_2020_journees_chaude\\Wang_2015_journees_chaudes\\RMR")
+
+for (i in 1:length(folder))
+{
+  for(j in 1:6)
+  {
+    if(substr(folder[i], nchar(folder[i])-3,nchar(folder[i])) == ".tif")
+    {
+      image_1_bande1 <- raster(folder[i])
+      image_1_bandelst <- raster(folder[i], band=7)
+      s <- stack(image_1_bande1, image_1_bandelst)
+      
+      v <- data.frame(na.omit(values(s)))
+      names(v) <- c('L1', 'L2')
+      v <- v[!v$L1 == 256, ]
+      mean_lst <- aggregate(v, list(v$L1), mean)
+      if(v[1,2] < 100)
+      {
+        next
+      }else
+      {
+
+        m <- lm(L1 ~ L2, data=mean_lst)
+        
+        nom_fichier <- paste0("D:\\Universit? Laval\\Cartographie vuln?rabilit? vagues de chaleur accamblante - Documents\\General\\Data\\Landsat_methode_Wang\\Wang_2015_2020_journees_chaude\\Info_SUHII_2015\\",folder_court[i]) 
+        nom_fichier <- paste(nom_fichier,j,sep = "_")
+        nom_fichier <- paste0(nom_fichier, ".txt")
+        
+        sink(nom_fichier)
+        print(summary(m))
+        sink()
+      }
+      
+    }
+  }
+}
+```
+
+J'ai aussi essayé avec les NDVI mais les résultats sont pas si concluant et j'ai essayé un modèle game qui fait mieux. Donc on garde le code de NDVI mais on utilise pas.
+
+Essai avec les NDVI:
+
+``` {r eval = FALSE}
+folder_isa_lst_NDVI_court <- list.files("D:\\Universit? Laval\\Cartographie vuln?rabilit? vagues de chaleur accamblante - Documents\\General\\Data\\Landsat_methode_Wang\\Wang_2015_2020_journees_chaude_mac\\Wang_2018_journees_chaudes\\composite_2" , pattern = ".tif")
+folder_isa_lst_NDVI <- list.files("D:\\Universit? Laval\\Cartographie vuln?rabilit? vagues de chaleur accamblante - Documents\\General\\Data\\Landsat_methode_Wang\\Wang_2015_2020_journees_chaude_mac\\Wang_2018_journees_chaudes\\composite_2", pattern = ".tif", full.names = TRUE)
+
+#folder_LST <- list.files("D:\\Universit? Laval\\Cartographie vuln?rabilit? vagues de chaleur accamblante - Documents\\General\\Data\\Landsat_methode_Wang\\Wang_2015_2020_journees_chaude\\Wang_2015_journees_chaudes", pattern = ".tif", full.names = TRUE)
+
+library(sf)
+
+folder_shp <- list.files("D:\\Universit? Laval\\Cartographie vuln?rabilit? vagues de chaleur accamblante - Documents\\General\\Data\\Shp_file\\RMR\\31923\\rmr_decoup", pattern = ".shp", full.names = TRUE)
+folder_shp2 <- folder_shp[1] 
+for(i in 1:length(folder_shp))
+{
+  if(substr(folder_shp[i], nchar(folder_shp[i])-3,nchar(folder_shp[i])) == ".shp")
+  {
+    print(folder_shp[i])
+    folder_shp2 <- c(folder_shp2, folder_shp[i])
+  }
+}
+
+folder_shp2 <- folder_shp2[-1] 
+
+folder_isa_lst_NDVI2 <- folder_isa_lst_NDVI[1]
+folder_isa_lst_NDVI2_court <- folder_isa_lst_NDVI_court[1]
+for (i in 1:length(folder_isa_lst_NDVI))
+{
+  if(substr(folder_isa_lst_NDVI[i], nchar(folder_isa_lst_NDVI[i])-3,nchar(folder_isa_lst_NDVI[i])) == ".tif")
+  {
+    folder_isa_lst_NDVI2 <- c(folder_isa_lst_NDVI2, folder_isa_lst_NDVI[i])
+    folder_isa_lst_NDVI2_court <- c(folder_isa_lst_NDVI2_court, folder_isa_lst_NDVI_court[i])
+  }
+  
+}
+folder_isa_lst_NDVI2 <- folder_isa_lst_NDVI2[-1] 
+folder_isa_lst_NDVI2_court <- folder_isa_lst_NDVI2_court[-1]
+
+for(i in 15) #1:length(folder_isa_lst_NDVI2)) 
+{
+  raster_isa <- raster(folder_isa_lst_NDVI2[i], band=1)
+  shp <- st_read(folder_shp2[i])
+  rr <-crop(raster_isa,extent(shp))
+  rr3 <- mask(rr, shp )
+  rr3[rr3 < 0 ] <- NA
+  rr3[rr3 > 50 ] <- NA
+  #plot(rr3)
+  for(j in 2:27)
+  {
+    raster_lst <-raster(folder_isa_lst_NDVI2[i], band=j)
+    rr_lst <-crop(raster_lst,extent(shp))
+    rr3_lst <- mask(rr_lst, shp )
+    rr3_lst[rr3_lst < 273 ] <- NA
+    for (k in 28:31)
+    {
+      raster_NDVI <-raster(folder_isa_lst_NDVI2[i], band=k)
+      rr_NDVI <-crop(raster_NDVI,extent(shp))
+      rr3_NDVI <- mask(rr_NDVI, shp )
+      #rr3_NDVI[rr3_lst < 273 ] <- NA
+      
+      #nom_fichier <- paste0("D:\\Universit? Laval\\Cartographie vuln?rabilit? vagues de chaleur accamblante - Documents\\General\\Data\\Landsat_methode_Wang\\Wang_2015_2020_journees_chaude\\Info_SUHII_with_NDVI_2016\\", folder_isa_lst_NDVI2_court[i]) 
+      #nom_fichier <- paste(nom_fichier,j,sep = "_")
+      #nom_fichier <- paste(nom_fichier,k,sep = "_")
+      #nom_fichier <- paste0(nom_fichier, ".txt")
+      s <- stack(rr3, rr3_lst, rr3_NDVI)
+      v <- data.frame(na.omit(values(s)))
+      names(v) <- c('ISA', 'Mean_LST', 'Mean_NDVI')
+      if(nrow(v) != 0)
+      {
+        mean_lst <- aggregate(v, list(v$ISA), mean)
+     
+        m <- lm(Mean_LST ~ ISA + Mean_NDVI, data=mean_lst)
+        
+        #sink(nom_fichier)
+        #    
+        print(summary(m))
+        print(cor(v))
+        #sink()
+      }
+    }
+  }
+} 
+``` 
+
+Ici c'est le bon code avec le modele linéaire, le modèle LOESS (il est là mais on l'utilise pas) et le modèle GAM. Pour le modèle linéaire, il suffit de prendre l'intercept et de le mettre dans la calculatrice raster pour faire valeur de l'imperméabilité * intercept. Pour ce qui est du modèle GAM, c'est un peu plus complexe. Ce que je fais, c'est que je prends le prédit les valeurs de 1 à 100 et je mets les valeurs dans le raster. 
+```{r eval = FALSE}
+for(i in 19:length(folder_isa_lst_NDVI2)) 
+{
+  raster_isa <- raster(folder_isa_lst_NDVI2[i], band=1)
+  shp <- st_read(folder_shp2[i])
+  rr <-crop(raster_isa,extent(shp))
+  rr3 <- mask(rr, shp )
+  rr3[rr3 < 0 ] <- NA
+  rr3[rr3 > 100 ] <- NA
+  #plot(rr3)
+  for(j in 2:15)
+  {
+    raster_lst <-raster(folder_isa_lst_NDVI2[i], band=j)
+    rr_lst <-crop(raster_lst,extent(shp))
+    rr3_lst <- mask(rr_lst, shp )
+    rr3_lst[rr3_lst < 273 ] <- NA
+     
+    nom_fichier <- paste0("D:\\Universit? Laval\\Cartographie vuln?rabilit? vagues de chaleur accamblante - Documents\\General\\Data\\Landsat_methode_Wang\\Wang_2015_2020_journees_chaude_mac\\Info_SUHII_with_gam_2020\\", folder_isa_lst_NDVI2_court[i]) 
+    nom_fichier <- paste(nom_fichier,j,sep = "_")
+    nom_fichier <- paste0(nom_fichier, ".txt")
+    s <- stack(rr3, rr3_lst)
+    v <- data.frame(na.omit(values(s)))
+    names(v) <- c('ISA', 'Mean_LST')
+    if(nrow(v) != 0)
+    {
+        mean_lst <- aggregate(v, list(v$ISA), mean)
+        if(nrow(mean_lst) > 4)
+        {
+        m <- lm(Mean_LST ~ ISA, data=mean_lst)
+        ll <- loess(Mean_LST ~ ISA , data=mean_lst)
+        g <- gam(Mean_LST ~ s(ISA),data=mean_lst)
+        
+        sink(nom_fichier)
+            
+        print(summary(m))
+        
+        print("")
+        print("Loess R2")
+        print(summary(ll))
+        ss.dist <- sum(scale(mean_lst$Mean_LST, scale=FALSE)^2)
+        ss.resid <- sum(resid(ll)^2)
+        
+        print(1-ss.resid/ss.dist)
+        print('')
+        print(summary(g))
+        sink()
+        nom_fichier<- gsub("txt", "jpeg", nom_fichier)
+        jpeg(file=nom_fichier)
+                  
+        plot(Mean_LST ~ ISA, data=mean_lst)
+        abline(m)
+        dev.off()
+        
+        
+      }
+    }
+  }
+} 
+```
+
+Ici est la prediction du gam et la mise dans le raster + la sauvegarde. 
+
+
+```{r eval = FALSE}
+test <- predict(g, mean_lst)
+test <- data.frame(test)
+test$SUHII <- NA
+test <- cbind(mean_lst, test)
+
+for(hh in 1:nrow(data.frame(test)))
+{
+  if(hh == 1)
+  {
+    test$SUHII[hh] <- 0
+  }else
+  {
+    test$SUHII[hh] <- test$test[hh] - test$test[hh-1] +  test$SUHII[hh-1]
+  }
+}
+
+#d <- readxl::read_xlsx(path="C:\\Users\\JPGIL11\\Desktop\\Classeur1.xlsx",col_names = FALSE)
+#d$...1 <- as.numeric(d$...1)
+#d$...2 <- as.numeric(d$...2)
+#d$...3 <- as.numeric(d$...3)
+rclmat <- matrix(test[,c(2,5)], ncol=2 )
+t <- as.matrix(test[,c(2,5)])
+
+test_2 <- raster::reclassify(raster_isa,t)
+
+shp <- st_read(folder_shp2[i])
+rr <-crop(test_2,extent(shp))
+rr3 <- mask(rr, shp )
+rr3[rr3 < 0 ] <- NA
+rr3[rr3 > 20] <- NA
+plot(rr3)
+writeRaster(rr3, "D:\\Universit? Laval\\Cartographie vuln?rabilit? vagues de chaleur accamblante - Documents\\General\\Data\\SUHII\\gam\\Victo.tif", 'GTiff', overwrite=TRUE)
+```
