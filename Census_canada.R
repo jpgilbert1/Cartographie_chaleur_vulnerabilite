@@ -11,4 +11,4 @@ census_data <- get_census(dataset='CA16', regions=list(CMA="24421"),
 
 e <- list_census_regions("CA16")
 
-options(cancensus.cache_path = "custom cache path")
+options(cancensus.cache_path = "custom cache path")s
