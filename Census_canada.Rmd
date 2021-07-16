@@ -7,7 +7,7 @@ output: html_document
 Ce code a servi pour aller chercher le nombre de personne dans les ilots de diffusion, pour la ville de Quebec (pour un test pour le prototype comme proxy d'ecoumene)
 
 ```{r eval = FALSE}
-install.packages("cancensus")
+##install.packages("cancensus")
 
 library(cancensus)
 

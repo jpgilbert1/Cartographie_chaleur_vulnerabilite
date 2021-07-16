@@ -1,0 +1,215 @@
+---
+title: "Untitled"
+author: "Jean-Philippe Gilbert"
+date: "13/07/2021"
+output: html_document
+---
+Importe les library
+```{r eval =FALSE}
+library(raster)
+library(rgdal)
+library(sf)
+library(mgcv)
+```
+
+Importe les fichiers d'images composites. Chaque image comprends l'imperméabilité des sols par RMR. Donc un fichier, une RMR. Puis, l'ensemble des images Landsat de la chaleur au sol (LST) même s'il n'y a pas nécessairement une juxtaposition des données. C'est pas grave pour l'instant et c'est moins de travail sur ArcGIS (car il y a un problème de temps en temps sur la jointure spatial. Donc passe par ArcGIS). J'aime avoir un fichier long pour le path, et le fichier court pour nommer mes rasters en sortie. Le tout, pour une année. Donc, quand c'est le temps d'évaluer, important de changer la date de Wang_2020_journees_chaudes.
+
+```{r eval = FALSE}
+folder_isa_lst_court <- list.files("D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\Landsat_methode_Wang\\Wang_2015_2020_journees_chaude_mac\\Wang_2020_journees_chaudes\\composite_2" , pattern = ".tif")
+folder_isa_lst <- list.files("D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\Landsat_methode_Wang\\Wang_2015_2020_journees_chaude_mac\\Wang_2020_journees_chaudes\\composite_2", pattern = ".tif", full.names = TRUE)
+```
+
+Doit lire les shp files des RMR. Ceci est fait auparavant dans arcgis. Le calcul des SUHII est moins long quand on coupe avec les RMR. Chaque fichier représente une RMR.
+
+```{r eval = FALSE}
+folder_shp <- list.files("D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\Shp_file\\RMR\\31923\\rmr_decoup", pattern = ".shp", full.names = TRUE)
+folder_shp2 <- folder_shp[1] 
+for(i in 1:length(folder_shp))
+{
+  if(substr(folder_shp[i], nchar(folder_shp[i])-3,nchar(folder_shp[i])) == ".shp")
+  {
+    folder_shp2 <- c(folder_shp2, folder_shp[i])
+  }
+}
+
+folder_shp2 <- folder_shp2[-1] 
+
+folder_isa_lst2 <- folder_isa_lst[1]
+folder_isa_lst2_court <- folder_isa_lst_court[1]
+for (i in 1:length(folder_isa_lst))
+{
+  if(substr(folder_isa_lst[i], nchar(folder_isa_lst[i])-3,nchar(folder_isa_lst[i])) == ".tif")
+  {
+    folder_isa_lst2 <- c(folder_isa_lst2, folder_isa_lst[i])
+    folder_isa_lst2_court <- c(folder_isa_lst2_court, folder_isa_lst_court[i])
+  }
+  
+}
+folder_isa_lst2 <- folder_isa_lst2[-1] 
+folder_isa_lst2_court <- folder_isa_lst2_court[-1]
+
+rm(folder_isa_lst, folder_isa_lst_court, folder_shp)
+```
+
+Calcul des SUHII avec le modèle GAM. Pour ce faire, je prends le fichier d'image composite. La première bande est toujours l'imperméabilité du sol (ISA), et le reste est les images Landsat. On découpe le ISA avec le fichier shp dont l'eau est retirer avec un fichier hydrique sur ArcGIS (ceci est sketch un peu, car il y a le même nombre de RMR que d'images, donc l'utilisation du même i pour le raster que pour le shape file, cependant, il faut s'assurer que les shp sont dans le même ordre que les fichiers raster, sinon ça va bugger car il y va dire qu'il n'y a pas de superposition entre ISA et shp.) 
+
+La deuxième boucle for part par la deuxième bande et va jusqu'au nombre de bandes totaux du fichier, qui sont tous des LST. Met aussi le masque du SHP pour réduire le temps de calcul. Ensuite stack les deux variables (car je mets le ISA dans une variable et le LST dans une autre variable). Ensuite, vérifie si le stack et vide ou pas. Il est vide si l'image satellitaire LST n'est pas sur la région à l'étude. Plus simple que vérifier un a un à la main. 
+
+Si les deux variables se stack, c'est là que le modèle GAM est appliqué. On fait la moyenne des valeurs du LST par niveau d'imperméabilité du sol (donc une moyenne pour 1,2,3, ..., 100). J'ai eu des problèmes avec des fichiers avec peu de superposition, donc c'est pour ça que j'ai mis un nrow(mean_lst) >4. Totalement arbitraire. Applique le Gam qu'on met dans g.
+
+Souvent, il y a plusieurs images LST pour une année pour donc je garde que le modèle qui fit le mieux pour modélise les données. Donc, haut dans la boucle, j'ai mis une variable nommée r_carre que j'ai mis à 0. Puis, si le R2 est plus haut que 0 je fait la prédiction pour le R2. Or, si le R2 change et que j'en trouve un plus haut, je refais une prédiction pour mon fichier raster. Donc, ça m'assure que le SUHII est le meilleur pour cette RMR pour l'année regardé. 
+
+En terme de prédiction, je prends le modèle et je prédis le LST à partir du ISA. Puis, je créé un dataframe qui prends met la première valeur (soit le Isa le plus bas) et le met à 0. Puis, chaque valeur des prochains ISA est la valeur du LST moisn la valeur suivantes. Il arrive parfois que la valeur suivante soit plus faible que la valeur précédente. L'addition me permet de garder toujours une valeur positive. Je prends la différence que j'additionne à l'ancienne valeur. 
+
+Je mets cela dans une matrice, et je reclassifie mon raster ISA pour lui dire de remplacer la valeur du ISA par la valeur du SUHII calculer. Je m'assure que le raster est découper comme il faut avec le shp, puis j'enregistre. Le SUHII est évalué avec GAM.
+ 
+```{r eval = FALSE}
+
+
+for(i in 1:length(folder_isa_lst2)) 
+{
+  raster_isa <- raster(folder_isa_lst2[i], band=1)
+  shp <- st_read(folder_shp2[i])
+  rr <-crop(raster_isa,extent(shp))
+  rr3 <- mask(rr, shp )
+  rr3[rr3 < 0 ] <- NA
+  rr3[rr3 > 100 ] <- NA
+  r_carre <- 0 
+  #plot(rr3)
+  for(j in 2:raster_isa@file@nbands)
+  {
+    
+    raster_lst <-raster(folder_isa_lst2[i], band=j)
+    rr_lst <-crop(raster_lst,extent(shp))
+    rr3_lst <- mask(rr_lst, shp )
+    rr3_lst[rr3_lst < 273 ] <- NA
+
+    s <- stack(rr3, rr3_lst)
+    v <- data.frame(na.omit(values(s)))
+    names(v) <- c('ISA', 'Mean_LST')
+    if(nrow(v) != 0)
+    {
+        mean_lst <- aggregate(v, list(v$ISA), mean)
+        if(nrow(mean_lst) > 4)
+        {
+        g <- gam(Mean_LST ~ s(ISA),data=mean_lst)
+        if(summary(g)$r.sq > r_carre)
+        {
+          r_carre <- summary(g)$r.sq
+          print(summary(g)$r.sq)
+          
+          #prediction
+          
+          test <- predict(g, mean_lst)
+          test <- data.frame(test)
+          test$SUHII <- NA
+          test <- cbind(mean_lst, test)
+
+          for(hh in 1:nrow(data.frame(test)))
+          {
+           if(hh == 1)
+            {
+              test$SUHII[hh] <- 0
+            }else
+            {
+              test$SUHII[hh] <- test$test[hh] - test$test[hh-1] +  test$SUHII[hh-1]
+            }
+          }
+          rclmat <- matrix(test[,c(2,5)], ncol=2 )
+          t <- as.matrix(test[,c(2,5)])
+
+          test_2 <- raster::reclassify(raster_isa,t)
+  
+          shp <- st_read(folder_shp2[i])
+          rr <-crop(test_2,extent(shp))
+          rr4 <- mask(rr, shp )
+          rr4[rr4 < 0 ] <- NA
+          rr4[rr4 > 50] <- NA
+          plot(rr4)
+          nom_fichier_raster <- paste0("D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\SUHII\\Gam_final\\Raster_2020\\SUHII_",folder_isa_lst2_court[i]) 
+          
+          
+          writeRaster(rr4, nom_fichier_raster, 'GTiff', overwrite=TRUE)
+          
+             nom_fichier <- paste0("D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\SUHII\\Gam_final\\R2_2020\\", folder_isa_lst2_court[i]) 
+           
+            nom_fichier <- paste0(nom_fichier, ".txt")
+            
+            write.table(r_carre , file = nom_fichier, sep = "\t",
+            row.names = TRUE, col.names = NA)
+           
+        }
+      }
+    }
+  }
+
+} 
+```
+
+Finalement, il faut prendre le meilleur modèle. Cette section de code fait cela. D'abord, il faut lire le fichier R2. Celui-ci est fait à la main, en prenant les fichiers texte et en mettant la valeur du R2 pour chaque RMR et chaque année. Comme j'ai pas écrit le nom de la ville de la même manière donc je me suis fait une variable avec les nom des villes des raster et je cbind avec le fichier de r2.
+
+Renomme les colonnes de R2. Les Na sont mis à 0. pmax permet d'avoir la valeurs maximal pour chaque ligne et la stock dans la colonne max. Ainsi, l'année qui est == a max dit que c,est le meilleur modele a prendre.  Je lis ensuite le fichier AD pour le Canada. 
+
+Et on fait une boucle qui commence par bouclier sur les lignes. Pour les lignes, va me chercher le fichier rmr. Puis, ne garde que les polygone d'AD qui égale le RMRPIDU de la RMR. Pour une raison que je comprends pas, le == ne marche pas avec les nombres car en facteurs (levels) mais avec as.character, ça fonctionne.
+
+Ensuite on loop sur les colone, et on vérifie si la valeur de la colonne j est la valeur max. Lorsque c'est le cas, importe le raster correspondant, ensuite transforme le raster en point, ensuite transforme le fichier AD en SpatialPolygon pour pouvoir faire la jointure. Transform la projection des points pour fitter avec AD. Ensuite, la fonction over est le spatial joint. Mais ca fait juste un dataframe pour chacune des AD et la moyenne des valeurs grid. Donc on doit cbind les deux dataframes. D'abord combine le nom des ad pour avoir une clé de merge pour le merge. Finalement, exporte le fichier en shp. pour pouvoir faire l'ACP. 
+
+```{r eval = FALSE}
+library(ggplot2)
+
+r2 <- read.table("D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\SUHII\\Gam_final\\R2_gam_2015_2020.csv", sep =";", header = TRUE)
+
+nom_fichier_raster <- c("Alma","Baie_comeau","Campelton","Cowan","Dolbeau","Drummond","Gatineau","Granby","Hawk","Joliette","Lachute","Matane","MTL","QC","RDL","Rimouski","Rouyn","Sag","Saint_hyacinthe","Sainte_George","Sainte_Marie","Salab","Sept_iles","Shawi","Sherby","Sorel","Thetford","TR","Valdor","Victo")
+
+r2 <- cbind(r2, nom_fichier_raster)
+names(r2)[names(r2) == "X2015"] <- "2015"
+names(r2)[names(r2) == "X2016"] <- "2016"
+names(r2)[names(r2) == "X2017"] <- "2017"
+names(r2)[names(r2) == "X2018"] <- "2018"
+names(r2)[names(r2) == "X2019"] <- "2019"
+names(r2)[names(r2) == "X2020"] <- "2020"
+
+r2[is.na(r2)] <- 0
+r2$Max <- pmax(r2$`2015`,r2$`2016`,r2$`2017`,r2$`2018`,r2$`2019`,r2$`2020`)
+AD_shp <- sf::st_read(
+  "D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\Shp_file\\AD\\statcan_lad_000b16a_f_s_poly.shp") 
+
+ for (i in 1:nrow(r2))
+{
+  rmr_file_path <- "D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\Shp_file\\RMR\\31923\\rmr_decoup\\" 
+  rmr_file_path <- paste0(rmr_file_path, r2$X[i])
+  rmr_file_path <- paste0(rmr_file_path, ".shp")
+  rmr_shp <- sf::st_read(rmr_file_path)
+  AD_rmr_shp <- AD_shp[which(as.character(AD_shp$RMRPIDU) == as.character(rmr_shp$RMRPIDU)), ]
+  
+  for(j in 2:ncol(r2))
+  {
+    if(r2[i,j] == r2$Max[i])
+    {
+      suhii_file_path <- paste0("D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\SUHII\\Gam_final\\Raster_", colnames(r2[j]))
+      suhii_file_path <- paste0(suhii_file_path, "\\SUHII_")
+      suhii_file_path <- paste0(suhii_file_path, r2$nom_fichier_raster[i])
+      suhii_file_path <- paste0(suhii_file_path, "_ISA_norm_reclass_100_composite.tif")
+      suhii_raster <- raster(suhii_file_path)
+      suhii_point <- rasterToPoints(suhii_raster, spatial = TRUE)
+      
+      AD_rmr_shp_sp <- as(AD_rmr_shp, "Spatial")
+      suhii_point_crs <- spTransform(suhii_point, crs(AD_rmr_shp_sp))
+      pts.poly <- sp::over(AD_rmr_shp_sp,suhii_point_crs,fn=mean)
+      pts.poly2 <- cbind(as.data.frame(as(AD_rmr_shp, "Spatial")@data$ADIDU), pts.poly)
+      names(pts.poly2)[names(pts.poly2) == "as(AD_rmr_shp, \"Spatial\")@data$ADIDU"] <- "ADIDU"
+      AD_rmr_shp_sp2 <- merge(AD_rmr_shp_sp, pts.poly2)
+      
+  
+      name_file_output <- paste0(r2$X[i], "_SUHII_par_AD")
+        rgdal::writeOGR(obj=AD_rmr_shp_sp2, dsn ="D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\SUHII\\Gam_final\\AD_RMR_SUHII", layer =  name_file_output,
+                driver = "ESRI Shapefile", overwrite_layer = TRUE) 
+      break
+    }
+  }
+}
+
+
+
+```
+
