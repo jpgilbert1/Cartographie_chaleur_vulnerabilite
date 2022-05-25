@@ -1,6 +1,6 @@
 ---
-title: "Données météorologiques - Environnement Canada"
-author: "Département de géographie - Université Laval"
+title: "Meteorological data - Environment Canada"
+author: "Geography Department - Université Laval"
 date: "22/06/2021"
 update: "25/05/2022"
 output: html_document
@@ -11,16 +11,15 @@ library(filesstrings)
 library(dplyr)
 ```
 
-## Lecture des données de stations météorologiques d'Environnement Canada
-Utilise une liste de stations ayant des données d'environnement canada de 2010 a 2020 sauvegarder localement. La liste se retrouve dans le répertoire Data
+## Reading Environment Canada weather station data
+Uses a list of stations with Environment Canada data from 2017 to 2020 saved locally. The list is found in the Data directory
 
 ```{r}
 liste_station <- read.csv('/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Donnees_meteo/Station Inventory EN_modif_2.csv')
 ```
 
-## Téléchargement des données météorologiques d'Environnement Canada
-Une fois que chacune des stations météorologiques sont intégrés dans R, il faut télécharger les données météorologiques des serveurs d'Environnement Canada. Ceux-ci offre une méthodologie pour ce faire. Elle se retrouve ici : https://drive.google.com/drive/folders/1WJCDEU34c60IfOnG4rv5EPZ4IhhW9vZH. Elle fait appel au Command line.
-
+## Downloading weather data from Environment Canada
+Once each of the weather stations are integrated into R, the weather data must be downloaded from Environment Canada's servers. They offer a methodology to do this. It can be found here: https://drive.google.com/drive/folders/1WJCDEU34c60IfOnG4rv5EPZ4IhhW9vZH. It uses the Command line.
 
 ```{r eval=FALSE}
 for (i in 1:nrow(liste_station))
@@ -36,20 +35,21 @@ for (i in 1:nrow(liste_station))
   
   #puis déplace les fichiers du dossier de téléchargement vers le dossier désiré.
   
-  fichiers <- list.files("DOSSIER_TÉLÉCHARGEMENT", pattern = 'fr_climat', full.names = TRUE)
+  fichiers <- list.files("FOLDER_DOWNLOAD", pattern = 'fr_climat', full.names = TRUE)
   for (j in 1:length(fichiers))
   {
-    file.move(fichiers[j], 'DOSSIER_DÉSIRÉ')     
+    file.move(fichiers[j], 'DESIRED_FILE')     
   }
 }
 ```
 
-## Journées chaudes
-Une fois que les données météorologiques pour chacune des stations sont téléchargées, il faut déterminer quelles sont les dates des journées chaudes, pour acquérir les imageries de température du sol adéquates. Nous utilisons une version modifiée de la définition d'une vagues de chaleur de l'INSPQ : https://www.inspq.qc.ca/pdf/publications/1079_IndicateursVigieSanteChaleur.pdf. Selon l'INSPQ, une vague de chaleur doit avoir 3 jours consécutifs de journée avec une température supérieur a 30 celsius et minimal supérieur a 20 celsius. Cependant, en suivant cette définition, nous n'avons pas d'images pour l'ensemble du territoire. Donc, nous utilisons le critère de 30 celsius
+## Hot Days
+Once the meteorological data for each station is downloaded, it is necessary to determine the dates of the hot days, in order to acquire the appropriate ground temperature imagery. We use a modified version of the INSPQ definition of a heat wave: https://www.inspq.qc.ca/pdf/publications/1079_IndicateursVigieSanteChaleur.pdf. According to the INSPQ, a heat wave must have 3 consecutive days with a temperature above 30 celsius and a minimum above 20 celsius. However, following this definition, we do not have images for the entire territory. Therefore, we use the criterion of 30 celsius.
+
 
 ``` {r eval=FALSE}
 
-donnees_meteo <- list.files(path = 'DOSSIER_CONTENANT_LES_DONNÉES_MÉTÉOROLOGIQUES', full.names = TRUE)
+donnees_meteo <- list.files(path = 'FILE_CONTAINING_METEOROLOGICAL_DATA', full.names = TRUE)
 file <- read.csv(donnees_meteo[1],stringsAsFactors = FALSE) 
 
 fichier_journees_chaudes <- file[1,]
@@ -80,7 +80,7 @@ for (i in 1:length(donnees_meteo))
 }
 
 fichier_journees_chaudes <- fichier_journees_chaudes[-1,]
-write.csv(fichier_journees_chaudes,"FICHIER_CONTENANT_LES_JOURNÉES_CHAUDES_POUR_CHAQUE_STATION")
+write.csv(fichier_journees_chaudes,"FILE_CONTAINING_THE_HOT_DAYS_FOR_EACH_STATION")
 ```
 
 
