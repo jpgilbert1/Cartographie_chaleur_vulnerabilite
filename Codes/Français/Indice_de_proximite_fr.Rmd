@@ -32,6 +32,7 @@ On utilise les centroid_AD qui ont été déplacé à l'aide du logiciel d'ArcGI
 
 ```{r eval = FALSE}
 centroid_AD <- st_read("CHEMIN_DU_FICHIER\\ID_RMR_2_MeanCenter1_deplacer.shp")
+#Doit être un shapefile
 coping_capacity <- st_read("FICHIER_PONCTUEL_DE_CAPACITÉ_À_FAIRE_FACE")
 centroid_AD$variable<- NA
 
