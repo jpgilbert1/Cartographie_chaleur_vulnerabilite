@@ -12,10 +12,10 @@ library(dplyr)
 ```
 
 ## Lecture des données de stations météorologiques d'Environnement Canada
-Utilise une liste de stations ayant des données d'environnement canada de 2010 a 2020 sauvegarder localement. La liste se retrouve dans le répertoire Data
+Utilise une liste de stations ayant des données d'environnement canada de 2017 à 2020 sauvegarder localement. La liste se retrouve dans le répertoire Data
 
 ```{r}
-liste_station <- read.csv('/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Donnees_meteo/Station Inventory EN_modif_2.csv')
+liste_station <- read.csv('Station Inventory EN_modif_2.csv')
 ```
 
 ## Téléchargement des données météorologiques d'Environnement Canada
@@ -80,8 +80,7 @@ for (i in 1:length(donnees_meteo))
 }
 
 fichier_journees_chaudes <- fichier_journees_chaudes[-1,]
-write.csv(fichier_journees_chaudes,"FICHIER_CONTENANT_LES_JOURNÉES_CHAUDES_POUR_CHAQUE_STATION" )
-
+write.csv(fichier_journees_chaudes,"FICHIER_CONTENANT_LES_JOURNÉES_CHAUDES_POUR_CHAQUE_STATION")
 ```
 
 
