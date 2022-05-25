@@ -1,0 +1,195 @@
+---
+title: "Données météorologiques - Environnement Canada"
+author: "Département de géographie - Université Laval"
+date: "22/06/2021"
+update: "25/05/2022"
+output: html_document
+---
+
+```{r message=FALSE}
+library(filesstrings)
+library(dplyr)
+```
+
+## Lecture des données de stations météorologiques d'Environnement Canada
+Utilise une liste de stations ayant des données d'environnement canada de 2010 a 2020 sauvegarder localement. La liste se retrouve dans le répertoire Data
+
+```{r}
+liste_station <- read.csv('/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Donnees_meteo/Station Inventory EN_modif_2.csv')
+```
+
+## Téléchargement des données météorologiques d'Environnement Canada
+Une fois que chacune des stations météorologiques sont intégrés dans R, il faut télécharger les données météorologiques des serveurs d'Environnement Canada. Ceux-ci offre une méthodologie pour ce faire. Elle se retrouve ici : https://drive.google.com/drive/folders/1WJCDEU34c60IfOnG4rv5EPZ4IhhW9vZH. Elle fait appel au Command line.
+
+
+```{r eval=FALSE}
+for (i in 1:nrow(liste_station))
+{
+  debut <- 'for annee in `seq 2017 2020`;do for mois in `seq 1`;do wget --content-disposition "https://climat.meteo.gc.ca/climate_data/bulk_data_f.html?format=csv&stationID='
+  fin <- paste(liste_station$Station.ID[i],'&Year=${annee}&Month=${mois}&Day=14&timeframe=2&submit=++T%C3%A9l%C3%A9charger+% D%0Ades+donn%C3%A9es" ;done;done', sep = "")
+  commande <- paste(debut,fin, sep="")
+ 
+  system(commande)
+  
+  #fait une pause de 5 secondes pour être certain que les données soit toutes téléchargées
+  Sys.sleep(5)
+  
+  #puis déplace les fichiers du dossier de téléchargement vers le dossier désiré.
+  
+  fichiers <- list.files("DOSSIER_TÉLÉCHARGEMENT", pattern = 'fr_climat', full.names = TRUE)
+  for (j in 1:length(fichiers))
+  {
+    file.move(fichiers[j], 'DOSSIER_DÉSIRÉ')     
+  }
+}
+```
+
+## Journées chaudes
+Une fois que les données météorologiques pour chacune des stations sont téléchargées, il faut déterminer quelles sont les dates des journées chaudes, pour acquérir les imageries de température du sol adéquates.
+donc on se fit sur la definition de INSPQ : https://www.inspq.qc.ca/pdf/publications/1079_IndicateursVigieSanteChaleur.pdf
+on on sort les dates 3 jours consecutf de journee chaude superieur a 30 et minimal superieur a 20.
+
+```{r eval=FALSE}
+
+donnees_meteo <- list.files(path = '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Donnees_meteo/Donnees_2010_2020/', full.names = TRUE)
+file <- read.csv(donnees_meteo[1]) 
+
+
+nb_de_jour =0
+fichier_vague_de_chaleur <- file[1,]
+for (i in 1:length(donnees_meteo))
+{
+  file <- read.csv(donnees_meteo[i])
+  file <- na_if(file, "")
+  for (j in 1:nrow(file))
+  {
+    if (file$Mois[j] %in% 4:11 && !is.na(file$Temp.max...C.[j]) && !is.na(file$Temp.min...C.[j]))
+    {
+      if(as.numeric(sub(",",".",file$Temp.max...C.[j])) >= 30 && as.numeric(sub(",",".",file$Temp.min...C.[j])) >= 20)
+      {
+        nb_de_jour <- nb_de_jour +1
+      }else
+        {
+          nb_de_jour <- 0
+        }
+      if(nb_de_jour >=3)
+      {
+        print(file$Nom.de.la.Station[j])
+        print(file$Date.Heure[j])
+        print(file$Temp.max...C.[j])
+        print(i)
+        print(j)
+        fichier_vague_de_chaleur <- rbind(fichier_vague_de_chaleur, file[j,])
+      }
+    }
+  }
+}
+
+fichier_vague_de_chaleur <- fichier_vague_de_chaleur[-1,]
+
+#library(sf)
+fichier_vague_de_chaleur$Longitude..x. <-  str_replace(fichier_vague_de_chaleur$Longitude..x., ',', '.')
+fichier_vague_de_chaleur$Latitude..y. <-  str_replace(fichier_vague_de_chaleur$Latitude..y., ',', '.')
+
+
+write.csv(fichier_vague_de_chaleur,"/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Donnees_meteo/fichier_vague_de_chaleur.csv" )
+
+
+#test <- merge(fichier_vague_de_chaleur, liste_station[,1:3], by.x = "ID.climatologique" , by.y = "X.1")
+```
+
+
+Ne donne pas beaucoup d'images, donc peut-etre prendre des images avec une température de jour en haut de 30 au lieu 
+de prendre la définition de vagues de chaleur de INSPQ
+C'est le même principe que la boucle plus haut, mais avec moins de conditions.
+
+``` {r eval=FALSE}
+
+donnees_meteo <- list.files(path = '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Donnees_meteo/Donnees_2015_2020/', full.names = TRUE)
+file <- read.csv(donnees_meteo[1],stringsAsFactors = FALSE) 
+
+fichier_journees_chaudes <- file[1,]
+for (i in 1:length(donnees_meteo))
+{
+  file <- read.csv(donnees_meteo[i], stringsAsFactors = FALSE)
+  file <- na_if(file, "")
+  file$ID.climatologique <- as.character(file$ID.climatologique)
+  #file2 <- merge(file, liste_station[,1:3], by.x = "Nom.de.la.Station" , by.y = "Modified.Date..2021.03.31.23.34.UTC")
+  #if(file2$X == "QUEBEC")
+  #{
+    for (j in 1:nrow(file))
+    {
+      
+      if (file$Mois[j] %in% 4:11 && !is.na(file$Temp.max...C.[j]) && !is.na(file$Temp.min...C.[j]))#if (file2$Mois[j] %in% 4:11 && !is.na(file2$Temp.max...C.[j]) && !is.na(file2$Temp.min...C.[j]))
+      {
+        if(as.numeric(sub(",",".",file$Temp.max...C.[j])) >= 30)
+        {
+          print(file$Nom.de.la.Station[j])
+          print(file$Date.Heure[j])
+          print(file$Temp.max...C.[j])
+          print(i)
+          print(j)
+          fichier_journees_chaudes <- rbind(fichier_journees_chaudes, file[j,])
+        #}
+      }
+    }
+  }
+  print(i)
+}
+```
+
+Comme beaucoup de doublons, il les enlever.
+
+```{r eval=FALSE}
+fichier_journees_chaudes <- fichier_journees_chaudes[-1,]
+save(fichier_journees_chaudes, file="/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Donnees_meteo/fichier_journee_chaude_doublons.rda")
+
+write.csv(fichier_journees_chaudes,"/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Donnees_meteo/fichier_journee_30_degcelsius.csv" )
+
+fichier_journees_chaudes <- fichier_journees_chaudes[!duplicated(fichier_journees_chaudes$Date.Heure), ]
+
+
+save(fichier_journees_chaudes, file="/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Donnees_meteo/fichier_journee_chaude_sans_doublons.rda")
+```
+
+Extraction des jours de vagues de chaleur selon la definition vague de chaleur EC.
+
+``` {r eval=FALSE}
+donnees_meteo <- list.files(path = '/Users/jean-philippegilbert/Documents/Université Laval/Cartographie vulnérabilité vagues de chaleur accamblante - General/Data/Donnees_meteo/Donnees_2010_2020/', full.names = TRUE)
+file <- read.csv(donnees_meteo[1]) 
+
+
+nb_de_jour =0
+fichier_vague_de_chaleur_ec <- file[1,]
+for (i in 1:length(donnees_meteo))
+{
+  file <- read.csv(donnees_meteo[i])
+  file <- na_if(file, "")
+  for (j in 1:nrow(file))
+  {
+    if (file$Mois[j] %in% 4:11 && !is.na(file$Temp.max...C.[j]) && !is.na(file$Temp.min...C.[j]))
+    {
+      if(as.numeric(sub(",",".",file$Temp.max...C.[j])) >= 32)
+      {
+        nb_de_jour <- nb_de_jour +1
+      }else
+      {
+        nb_de_jour <- 0
+      }
+      if(nb_de_jour >=3)
+      {
+        print(file$Nom.de.la.Station[j])
+        print(file$Date.Heure[j])
+        print(file$Temp.max...C.[j])
+        print(i)
+        print(j)
+        fichier_vague_de_chaleur_ec <- rbind(fichier_vague_de_chaleur_ec, file[j,])
+      }
+    }
+  }
+}
+
+fichier_vague_de_chaleur_ec <- fichier_vague_de_chaleur_ec[-1,]
+
+write.csv(fichier_vague_de_chaleur_ec ,"/Users/jean-philippegilbert/Documents/Université\ Laval/Cartographie\ vulnérabilité\ vagues\ de\ chaleur\ accamblante\ -\ General/Data/Donnees_meteo/fichier_vagues_de_chaleur_EC.csv" )
+```
