@@ -45,9 +45,9 @@ for (k in seq(from = 1, to = nrow(centroid_AD), by = 500))
                                 measure = "distance",
                                 osrm.profile = "car",
                                 )
-  g <- as.data.frame(route1_marche2$distances)
-  g <- g[ , colSums(is.na(g)) == 0]
-  centroid_AD$variable[k:kk] <- apply(g,1,min)
+  distance_df <- as.data.frame(route1_marche2$distances)
+  distance_df <- distance_df[ , colSums(is.na(distance_df)) == 0]
+  centroid_AD$variable[k:kk] <- apply(distance_df,1,min)
   #print(k)
   k = kk
   kk <- kk + 500
