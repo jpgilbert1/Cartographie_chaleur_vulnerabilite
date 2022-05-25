@@ -1,0 +1,86 @@
+---
+title: "Données météorologiques - Environnement Canada"
+author: "Département de géographie - Université Laval"
+date: "22/06/2021"
+update: "25/05/2022"
+output: html_document
+---
+
+```{r message=FALSE}
+library(filesstrings)
+library(dplyr)
+```
+
+## Lecture des données de stations météorologiques d'Environnement Canada
+Utilise une liste de stations ayant des données d'environnement canada de 2017 à 2020 sauvegarder localement. La liste se retrouve dans le répertoire Data
+
+```{r}
+liste_station <- read.csv('Station Inventory EN_modif_2.csv')
+```
+
+## Téléchargement des données météorologiques d'Environnement Canada
+Une fois que chacune des stations météorologiques sont intégrés dans R, il faut télécharger les données météorologiques des serveurs d'Environnement Canada. Ceux-ci offre une méthodologie pour ce faire. Elle se retrouve ici : https://drive.google.com/drive/folders/1WJCDEU34c60IfOnG4rv5EPZ4IhhW9vZH. Elle fait appel au Command line.
+
+
+```{r eval=FALSE}
+for (i in 1:nrow(liste_station))
+{
+  debut <- 'for annee in `seq 2017 2020`;do for mois in `seq 1`;do wget --content-disposition "https://climat.meteo.gc.ca/climate_data/bulk_data_f.html?format=csv&stationID='
+  fin <- paste(liste_station$Station.ID[i],'&Year=${annee}&Month=${mois}&Day=14&timeframe=2&submit=++T%C3%A9l%C3%A9charger+% D%0Ades+donn%C3%A9es" ;done;done', sep = "")
+  commande <- paste(debut,fin, sep="")
+ 
+  system(commande)
+  
+  #fait une pause de 5 secondes pour être certain que les données soit toutes téléchargées
+  Sys.sleep(5)
+  
+  #puis déplace les fichiers du dossier de téléchargement vers le dossier désiré.
+  
+  fichiers <- list.files("DOSSIER_TÉLÉCHARGEMENT", pattern = 'fr_climat', full.names = TRUE)
+  for (j in 1:length(fichiers))
+  {
+    file.move(fichiers[j], 'DOSSIER_DÉSIRÉ')     
+  }
+}
+```
+
+## Journées chaudes
+Une fois que les données météorologiques pour chacune des stations sont téléchargées, il faut déterminer quelles sont les dates des journées chaudes, pour acquérir les imageries de température du sol adéquates. Nous utilisons une version modifiée de la définition d'une vagues de chaleur de l'INSPQ : https://www.inspq.qc.ca/pdf/publications/1079_IndicateursVigieSanteChaleur.pdf. Selon l'INSPQ, une vague de chaleur doit avoir 3 jours consécutifs de journée avec une température supérieur a 30 celsius et minimal supérieur a 20 celsius. Cependant, en suivant cette définition, nous n'avons pas d'images pour l'ensemble du territoire. Donc, nous utilisons le critère de 30 celsius
+
+``` {r eval=FALSE}
+
+donnees_meteo <- list.files(path = 'DOSSIER_CONTENANT_LES_DONNÉES_MÉTÉOROLOGIQUES', full.names = TRUE)
+file <- read.csv(donnees_meteo[1],stringsAsFactors = FALSE) 
+
+fichier_journees_chaudes <- file[1,]
+for (i in 1:length(donnees_meteo))
+{
+  file <- read.csv(donnees_meteo[i], stringsAsFactors = FALSE)
+  file <- na_if(file, "")
+  file$ID.climatologique <- as.character(file$ID.climatologique)
+  
+    for (j in 1:nrow(file))
+    {
+      
+      if (file$Mois[j] %in% 4:11 && !is.na(file$Temp.max...C.[j]) && !is.na(file$Temp.min...C.[j]))
+      {
+        if(as.numeric(sub(",",".",file$Temp.max...C.[j])) >= 30)
+        {
+          print(file$Nom.de.la.Station[j])
+          print(file$Date.Heure[j])
+          print(file$Temp.max...C.[j])
+          print(i)
+          print(j)
+          fichier_journees_chaudes <- rbind(fichier_journees_chaudes, file[j,])
+        #}
+      }
+    }
+  }
+  print(i)
+}
+
+fichier_journees_chaudes <- fichier_journees_chaudes[-1,]
+write.csv(fichier_journees_chaudes,"FICHIER_CONTENANT_LES_JOURNÉES_CHAUDES_POUR_CHAQUE_STATION")
+```
+
+
