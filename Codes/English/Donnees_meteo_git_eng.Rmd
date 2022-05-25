@@ -15,7 +15,7 @@ library(dplyr)
 Uses a list of stations with Environment Canada data from 2017 to 2020 saved locally. The list is found in the Data directory
 
 ```{r}
-liste_station <- read.csv('Station Inventory EN_modif_2.csv')
+liste_station <- read.csv('PATH_TO_FILE\\Station Inventory EN_modif_2.csv')
 ```
 
 ## Downloading weather data from Environment Canada
