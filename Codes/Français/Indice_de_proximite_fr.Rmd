@@ -1,0 +1,62 @@
+---
+title: "Indice_proximité"
+author: "Département de géographie - Université Laval"
+date: "25/05/2022"
+output: html_document
+---
+
+```{r eval = FALSE}
+library(osrm)
+library(sf)
+library(mapview)
+library(dplyr)
+library(raster)
+library(rgdal)
+library(stars)
+library(sp)
+```
+
+
+## Serveur
+Le calcul de l'indice de proximité, les fichiers de points étaient beaucoup trop important pour être utilisé dans sa forme original. Nous avons donc créer notre propre serveur d'OpenStreet Map. Nous avons suivi cette méthodologie pour créer notre serveur : https://hub.docker.com/r/osrm/osrm-backend/. Nous avonsfaut utiliser un docker, c'est à dire un serveur local à même l'ordinateur. Le service gratuit de la librairie OSRM a une limite de nombre de données qu'on peut mettre dans un appel API. Le serveur qu'on fait en local
+a une limite beaucoup plus importante. permettant l'utilisation de tous les points du Canada pour chacun des points d'aires de diffusion
+
+À noter que le serveur fonctionne que si on exécute ce code sur notre ordinateur. Vous devez créer votre propre serveur ou ignorer cette ligne.
+```{r eval = FALSE}
+options(osrm.server = "http://127.0.0.1:5000/")
+```
+
+## Calcul de l'indice de proximité
+On utilise les centroid_AD qui ont été déplacé à l'aide du logiciel d'ArcGIS Pro. Pour plus de détails sur la procédure, consulté la section XX du rapport se retrouvant dans le dossier Rapport.
+
+
+```{r eval = FALSE}
+centroid_AD <- st_read("CHEMIN_DU_FICHIER\\ID_RMR_2_MeanCenter1_deplacer.shp")
+coping_capacity <- st_read("FICHIER_PONCTUEL_DE_CAPACITÉ_À_FAIRE_FACE")
+centroid_AD$variable<- NA
+
+k <- 1
+kk <- 500
+for (k in seq(from = 1, to = nrow(centroid_AD), by = 500))
+{
+  route1_marche2 <- osrmTable(src = centroid_AD[k:kk,], dst = coping_capacity,
+                                measure = "distance",
+                                osrm.profile = "car",
+                                )
+  g <- as.data.frame(route1_marche2$distances)
+  g <- g[ , colSums(is.na(g)) == 0]
+  centroid_AD$variable[k:kk] <- apply(g,1,min)
+  #print(k)
+  k = kk
+  kk <- kk + 500
+  if(kk > nrow(centroid_AD))
+  {
+    kk <- nrow(centroid_AD)
+  }
+  if(k > nrow(centroid_AD))
+  {
+    break
+  }
+}
+```
+
