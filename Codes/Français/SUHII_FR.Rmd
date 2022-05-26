@@ -24,7 +24,6 @@ Souvent, il y a plusieurs images de température du sol pour une année et une R
 En termes de prédiction, le meilleur modèle est pris et les prédictions sont faites à l'aide des données d'imperméabilité du NDVI et du NDBI. Une fois la prédiction faite, le tout est mis dans une matrice et est reclassifié à l'aide du fichier raster d'imperméabilité du sol en remplaçant les valeurs d'imperméabilité par la valeur du SUHII. Le code s'assure que le raster est découpé comme il faut avec le shp, puis il exporte le fichier raster.
  
 ```{r eval = FALSE}
-
 raster_isa <- raster("D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\Impermeabilite_des_sols\\QC\\prov_QC_reclass_100_2.tif")
 NDVI <- raster("D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\NDVI\\QC_2018\\NDVI_2018.tif")
 NDBI <- raster("D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\NDBI\\QC_2018\\NDBI_2018.tif")
@@ -136,9 +135,9 @@ for(ii in 1:nrow(shp_RMR))
 }
 ```
 
-Finalement, il faut prendre le meilleur modèle. Cette section de code fait cela. D'abord, il faut lire le fichier R2. Celui-ci est fait à la main, en prenant les fichiers texte et en mettant la valeur du R2 pour chaque RMR et chaque année. Comme j'ai pas écrit le nom de la ville de la même manière donc je me suis fait une variable avec les nom des villes des raster et je cbind avec le fichier de r2.
+Finalement, il faut prendre le meilleur modèle selon l'année. Cette section de code fait cela. D'abord, il faut lire le fichier R2. Celui-ci est fait à la main, en prenant les fichiers texte et en mettant la valeur du R2 pour chaque RMR et chaque année. 
 
-Renomme les colonnes de R2. Les Na sont mis à 0. pmax permet d'avoir la valeurs maximal pour chaque ligne et la stock dans la colonne max. Ainsi, l'année qui est == a max dit que c,est le meilleur modele a prendre.  Je lis ensuite le fichier AD pour le Canada. 
+Renomme les colonnes de R2. Les NA sont mis à 0. Pmax permet d'avoir la valeurs maximal pour chaque ligne et la copie dans dans la colonne max. Ainsi, l'année qui est == a max est le meilleur modèle à prendre. Le fichier d'aires de diffusion pour le Canada est ensuite lu.
 
 Et on fait une boucle qui commence par bouclier sur les lignes. Pour les lignes, va me chercher le fichier rmr. Puis, ne garde que les polygone d'AD qui égale le RMRPIDU de la RMR. Pour une raison que je comprends pas, le == ne marche pas avec les nombres car en facteurs (levels) mais avec as.character, ça fonctionne.
 
