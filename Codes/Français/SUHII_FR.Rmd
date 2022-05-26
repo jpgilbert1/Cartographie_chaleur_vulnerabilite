@@ -13,11 +13,11 @@ library(mgcv)
 ```
 
 #Calcul des SUHII avec le modèle GAM. 
-Pour ce faire, le code prends les fichiers d'imperméabilité, de température du sol, du NDVI et du NDBI fait la jointure spatiale entre les données. Le code découpe chaque image pour chaque RMR pour chaque province. Les images d'imperméabilité, de NDVI et de NDBI sont préalablement découpées avec les fichiers de RMR dans ArcGIS Pro.
+Pour ce faire, le code prends les fichiers d'imperméabilité, de température du sol, du NDVI et du NDBI fait la jointure spatiale entre les données. Un SUHII est créé pour chaque RMR pour chaque province avec l'image de température du sol donnant le meilleur modèle. Les images d'imperméabilité, de NDVI et de NDBI sont préalablement découpées avec les fichiers de RMR dans ArcGIS Pro.
 
-La deuxième boucle s'assure qu'il y a une justaposition d'une image de température du sol pour une RMR. Si justiaposition il y a, le code combine l'image de température du sol, d'imperméabilité du sol, de NDVI et de NDBI ensemble. L'image combinée est vérifiée pour s'assurer que l'image n'est pas vide. 
+La deuxième boucle s'assure qu'il y a une juxtaposition d'une image de température du sol pour une RMR. Si juxtaposition il y a, le code combine l'image de température du sol, d'imperméabilité, de NDVI et de NDBI ensemble. L'image combinée est vérifiée pour s'assurer que l'image n'est pas vide. 
 
-Par la suite, le modèle GAM est appliqué. L'image combiné est transformée en matrice pour pouvoir appliqué adéquatement le modèle GAM. On fait la moyenne des valeurs de température du sol, de NDVI et de NDBI par niveau d'imperméabilité du sol (donc une moyenne pour 1,2,3, ..., 100).
+Par la suite, le modèle GAM est appliqué. L'image combinée est transformée en matrice pour pouvoir appliquer adéquatement le modèle GAM. On fait la moyenne des valeurs de température du sol, de NDVI et de NDBI par niveau d'imperméabilité du sol (donc une moyenne pour 1,2,3, ..., 100).
 
 Souvent, il y a plusieurs images de température du sol pour une année et une RMR pour donc je garde que le modèle qui fit le mieux pour modélise les données. Donc, haut dans la boucle, j'ai mis une variable nommée r_carré que j'ai mis à 0. Puis, si le R2 est plus haut que 0, le code fait la prédiction pour cette image de température du sol. Donc, cela assure que le SUHII est le meilleur pour cette RMR pour l'année regardée. 
 
@@ -39,63 +39,47 @@ rm(shp)
 for(ii in 1:nrow(shp_RMR))
 {
 
-  rr55 <-crop(raster_isa,extent(shp_RMR[ii,] ))
-  rr5 <- mask(rr55, shp_RMR[ii,] )
-  rm(rr55)
-  rr5[rr5 < 0 ] <- NA
-  rr5[rr5 > 100 ] <- NA
-  rr5 <- round(rr5)
+  raster_isa_crop <-crop(raster_isa,extent(shp_RMR[ii,] ))
+  raster_isa_crop_mask <- mask(raster_isa_crop, shp_RMR[ii,] )
+  rm(raster_isa_crop)
+  raster_isa_crop_mask[raster_isa_crop_mask < 0 ] <- NA
+  raster_isa_crop_mask[raster_isa_crop_mask > 100 ] <- NA
+  raster_isa_crop_mask <- round(raster_isa_crop_mask)
   r_carre <- 0
   for(i in  1:length(filelist))
   {
     print(i)
     tryCatch({
-        lst <- raster(filelist[i])
-        if(lst@data@max > 2100000000)
-        {
-          lst = lst/100
-          lst[lst == 0] <- NA
-        }
+      lst <- raster(filelist[i])
+      if(lst@data@max > 2100000000)
+      {
+        lst = lst/100
+        lst[lst == 0] <- NA
+      }
+      rr_lst <-crop(lst,extent(shp_RMR[ii,] ))
+      rr_lst <- mask(rr_lst, shp_RMR[ii,] )
+      ex <- extent(raster_isa_crop_mask)
+      rr_lst <- crop(rr_lst, ex)
+      rm(lst, ex)
         
-        rr_lst <-crop(lst,extent(shp_RMR[ii,] ))
-        rr_lst <- mask(rr_lst, shp_RMR[ii,] )
-        ex <- extent(rr5)
-        rr_lst <- crop(rr_lst, ex)
-        rm(lst, ex)
-       
-            
-    #if(rr_lst@data@min == Inf && rr_lst@data@max == -Inf)
-    #{
-     # print("pas bon")
-    #}
-      #else{
-        
-     
-        
-      isa <- crop(rr5, extent(rr_lst))
+      isa <- crop(raster_isa_crop_mask, extent(rr_lst))
       r1 <- resample(isa, rr_lst)
       
       isa <- raster(vals=values(r1),ext=extent(rr_lst),crs=crs(rr_lst),
                         nrows=dim(rr_lst)[1],ncols=dim(rr_lst)[2])
       
-      
       rr_NDVI <- crop(NDVI, extent(rr_lst))
-
-      
       rr_NDVI <- raster(vals=values(rr_NDVI),ext=extent(rr_lst),crs=crs(rr_lst),
                         nrows=dim(rr_lst)[1],ncols=dim(rr_lst)[2])
       
-      
-      
       rr_NDBI <- crop(NDBI, extent(rr_lst))
-      
       rr_NDBI <- raster(vals=values(rr_NDBI),ext=extent(rr_lst),crs=crs(rr_lst),
                         nrows=dim(rr_lst)[1],ncols=dim(rr_lst)[2])
       
-      rr3 <- stack(isa,rr_NDVI, rr_NDBI, rr_lst)
-      
+      stack_image <- stack(isa,rr_NDVI, rr_NDBI, rr_lst)
       rm(isa, rr_NDVI, rr_NDBI)
-      v <- data.frame(na.omit(values(rr3)))
+      
+      v <- data.frame(na.omit(values(stack_image)))
       names(v) <- c('ISA',  'NDVI', 'NDBI','Mean_LST')
       if(nrow(v) != 0)
       {
@@ -110,53 +94,44 @@ for(ii in 1:nrow(shp_RMR))
             print(summary(g)$r.sq)
             
             #prediction
-            
-            test <- predict(g, mean_lst)
-            test <- data.frame(test)
-            test$SUHII <- NA
-            test <- cbind(mean_lst, test)
+            pred <- predict(g, mean_lst)
+            pred <- data.frame(pred)
+            pred$SUHII <- NA
+            pred <- cbind(mean_lst, pred)
   
-            for(hh in 1:nrow(data.frame(test)))
+            for(hh in 1:nrow(data.frame(pred)))
             {
              if(hh == 1)
               {
-                test$SUHII[hh] <- 0
+                pred$SUHII[hh] <- 0
               }else
               {
-                test$SUHII[hh] <- test$test[hh] - test$test[hh-1] +  test$SUHII[hh-1]
+                pred$SUHII[hh] <- pred$pred[hh] - pred$pred[hh-1] +  pred$SUHII[hh-1]
               }
             }
-            rclmat <- matrix(test[,c(2,7)], ncol=2 )
-            t <- as.matrix(test[,c(2,7)])
+            rclmat <- matrix(pred[,c(2,7)], ncol=2 )
+            pred_matrix <- as.matrix(pred[,c(2,7)])
   
-            test_2 <- raster::reclassify(rr5,t)
-    
-            #shp <- st_read(folder_shp2[i])
-            #rr <-crop(test_2,extent(shp[ii,]))
-            #rr4 <- mask(rr, shp[ii,] )
-            test_2 [test_2 < 0 ] <- NA
-            test_2 [test_2  > 50] <- NA
-            plot(test_2 )
+            pred_2 <- raster::reclassify(raster_isa_crop_mask,pred_matrix)
+            pred_2 [pred_2 < 0 ] <- NA
+            pred_2 [pred_2  > 50] <- NA
+            plot(pred_2)
+            
             nom_fichier_raster <- paste0("D:\\tempo\\Landsat_methode_Wang\\QC_2018\\SUHII2_",shp_RMR@data$RMRIDU[ii]) 
             nom_fichier_raster <- paste0(nom_fichier_raster,"_") 
-            nom_fichier_raster <- paste0(nom_fichier_raster, filelist_court[i] )
-  
+            nom_fichier_raster <- paste0(nom_fichier_raster, filelist_court[i])
+            writeRaster(pred_2 , nom_fichier_raster, 'GTiff', overwrite=TRUE)
             
-            writeRaster(test_2 , nom_fichier_raster, 'GTiff', overwrite=TRUE)
-            
-            
-             #nom_fichier <- paste0("D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\SUHII\\Gam_final\\R2_2019\\SUHII_", shp_RMR@data$RMRIDU[ii])
+             nom_fichier <- paste0("D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\SUHII\\Gam_final\\R2_2019\\SUHII_", shp_RMR@data$RMRIDU[ii])
              
-             # nom_fichier <- paste0(nom_fichier, ".txt")
+              nom_fichier <- paste0(nom_fichier, ".txt")
               
-             # write.table(r_carre , file = nom_fichier, sep = "\t",
-             # row.names = TRUE, col.names = NA)
-             
+              write.table(r_carre , file = nom_fichier, sep = "\t",
+              row.names = TRUE, col.names = NA)
           }
         }
       }
-    #}
-      }, error=function(e){})
+    }, error=function(e){})
   } 
 }
 ```
