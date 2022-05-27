@@ -135,7 +135,7 @@ for(ii in 1:nrow(shp_RMR))
   } 
 }
 ```
-
+#Incorporation des images de SUHII dans les aires de diffusion
 Finalement, il faut prendre le meilleur modèle selon l'année. Cette section de code fait cela. D'abord, il faut lire le fichier R2. Celui-ci est fait à la main, en prenant les fichiers texte et en mettant la valeur du R2 pour chaque RMR et chaque année. 
 
 Le fichier d'aires de diffusion se retrouve dans le dossier Data
