@@ -13,15 +13,15 @@ library(mgcv)
 ```
 
 #Calcul des SUHII avec le modèle GAM. 
-Pour ce faire, le code prends les fichiers d'imperméabilité, de température du sol, du NDVI et du NDBI fait la jointure spatiale entre les données. Un SUHII est créé pour chaque RMR pour chaque province avec l'image de température du sol donnant le meilleur modèle. Les images d'imperméabilité, de NDVI et de NDBI sont préalablement découpées avec les fichiers de RMR dans ArcGIS Pro.
+Pour ce faire, le code prend les fichiers d'imperméabilité, de température du sol, du NDVI et du NDBI fait la jointure spatiale entre les données. Un SUHII est créé pour chaque RMR pour chaque province avec l'image de température du sol donnant le meilleur modèle. Les images d'imperméabilité, de NDVI et de NDBI sont préalablement découpées avec les fichiers de RMR dans ArcGIS Pro.
 
-La deuxième boucle s'assure qu'il y a une juxtaposition d'une image de température du sol pour une RMR. Si juxtaposition il y a, le code combine l'image de température du sol, d'imperméabilité, de NDVI et de NDBI ensemble. L'image combinée est vérifiée pour s'assurer que l'image n'est pas vide. 
+La deuxième boucle s'assure qu'il y a une juxtaposition d'une image de température du sol pour une RMR. S’il y a juxtaposition, le code combine l'image de température du sol, d'imperméabilité, de NDVI et de NDBI. L'image combinée est vérifiée pour s'assurer que l'image n'est pas vide. 
 
 Par la suite, le modèle GAM est appliqué. L'image combinée est transformée en matrice pour pouvoir appliquer adéquatement le modèle GAM. On fait la moyenne des valeurs de température du sol, de NDVI et de NDBI par niveau d'imperméabilité du sol (donc une moyenne pour 1,2,3, ..., 100).
 
-Souvent, il y a plusieurs images de température du sol pour une année et une RMR pour donc je garde que le modèle qui fit le mieux pour modélise les données. Donc, haut dans la boucle, j'ai mis une variable nommée r_carré que j'ai mis à 0. Puis, si le R2 est plus haut que 0, le code fait la prédiction pour cette image de température du sol. Donc, cela assure que le SUHII est le meilleur pour cette RMR pour l'année regardée. 
+Souvent, il y a plusieurs images de température du sol pour une année et une RMR pour donc je garde que le modèle qui fit le mieux pour modélise les données. Donc, haut dans la boucle, j'ai mis une variable nommée r_carré qui est mise à 0. Puis, si le R2 est plus haut que 0, le code fait la prédiction pour cette image de température du sol. Donc, cela assure que le SUHII est le meilleur pour cette RMR pour l'année regardée. 
 
-En termes de prédiction, le meilleur modèle est pris et les prédictions sont faites à l'aide des données d'imperméabilité du NDVI et du NDBI. Une fois la prédiction faite, le tout est mis dans une matrice et est reclassifié à l'aide du fichier raster d'imperméabilité du sol en remplaçant les valeurs d'imperméabilité par la valeur du SUHII. Le code s'assure que le raster est découpé comme il faut avec le shp, puis il exporte le fichier raster.
+En termes de prédiction, le meilleur modèle est pris et les prédictions sont faites à l'aide des données d'imperméabilité du NDVI et du NDBI. Une fois la prédiction faite, le tout est mis dans une matrice et est reclassifié à l'aide du fichier raster d'imperméabilité du sol en remplaçant les valeurs d'imperméabilité par la valeur du SUHII. Le code s'assure que le raster est découpé comme il faut avec le shapefile, puis il exporte le fichier raster.
  
 ```{r eval = FALSE}
 raster_isa <- raster("D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\Impermeabilite_des_sols\\QC\\prov_QC_reclass_100_2.tif")
@@ -137,18 +137,17 @@ for(ii in 1:nrow(shp_RMR))
 
 Finalement, il faut prendre le meilleur modèle selon l'année. Cette section de code fait cela. D'abord, il faut lire le fichier R2. Celui-ci est fait à la main, en prenant les fichiers texte et en mettant la valeur du R2 pour chaque RMR et chaque année. 
 
-Renomme les colonnes de R2. Les NA sont mis à 0. Pmax permet d'avoir la valeurs maximal pour chaque ligne et la copie dans dans la colonne max. Ainsi, l'année qui est == a max est le meilleur modèle à prendre. Le fichier d'aires de diffusion pour le Canada est ensuite lu.
+Le fichier d'aires de diffusion se retrouve dans le dossier Data
 
-Et on fait une boucle qui commence par bouclier sur les lignes. Pour les lignes, va me chercher le fichier rmr. Puis, ne garde que les polygone d'AD qui égale le RMRPIDU de la RMR. Pour une raison que je comprends pas, le == ne marche pas avec les nombres car en facteurs (levels) mais avec as.character, ça fonctionne.
+Renomme les colonnes de R2. La première colonne doit être la valeur de la RMRPIDU. Les NA sont mis à 0. Pmax permet d'avoir la valeur maximale pour chaque ligne et la recopie dans la colonne max. Ainsi, l'année qui est == a max est le meilleur modèle à prendre. Le fichier d'aires de diffusion pour le Canada est ensuite lu.
 
-Ensuite on loop sur les colone, et on vérifie si la valeur de la colonne j est la valeur max. Lorsque c'est le cas, importe le raster correspondant, ensuite transforme le raster en point, ensuite transforme le fichier AD en SpatialPolygon pour pouvoir faire la jointure. Transform la projection des points pour fitter avec AD. Ensuite, la fonction over est le spatial joint. Mais ca fait juste un dataframe pour chacune des AD et la moyenne des valeurs grid. Donc on doit cbind les deux dataframes. D'abord combine le nom des ad pour avoir une clé de merge pour le merge. Finalement, exporte le fichier en shp. pour pouvoir faire l'ACP. 
+Pour les lignes, va me chercher le fichier RMR. Puis, ne garde que les polygones d'aires de diffusion qui égale le RMRPIDU de la RMR. Ensuite, une boucle sur les colonnes est faite pour déterminer quelle est l'année de la valeur de Pmax. Lorsque c'est le cas, importe le raster SUHII correspondant. Le raster est transformer en point. Ensuite, utilise le fichier d'aires de diffusion découpé selon la RMR. Le fichier d'aires de diffusion est transformé en SpatialPolygon pour effectuer une jointure spatiale. Cela s'effectue avec la fonction 'over'. Elle effectue la moyenne des valeurs de points qui superpose chacune des aires de diffusion. Il ensuite joindre les moyennes au fichier d'aires de diffusion. Donc on doit joindre les deux dataframes. Finalement, exporte le fichier en shapefile.
+
 
 ```{r eval = FALSE}
 library(ggplot2)
 
-r2 <- read.table("D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\SUHII\\Gam_final\\R2_gam_2018_2020.csv", sep =";", header = TRUE)
-
-#nom_fichier_raster <- c("Alma","Baie_comeau","Campelton","Cowan","Dolbeau","Drummond","Gatineau","Granby","Hawk","Joliette","Lachute","Matane","MTL","QC","RDL","Rimouski","Rouyn","Sag","Saint_hyacinthe","Sainte_George","Sainte_Marie","Salab","Sept_iles","Shawi","Sherby","Sorel","Thetford","TR","Valdor","Victo")
+r2 <- read.table("CHEMIN_OÙ_LE_FICHIER_CONTENANT_LES_VALEURS_DE_R2.csv", sep =";", header = TRUE)
 
 r2$X <- as.character(r2$X)
 r2$X[1] <-"001" 
@@ -158,30 +157,21 @@ r2$X[4] <-"015"
 r2$X_char <- r2$X
 r2$X <- paste("SUHII_", r2$X, sep="") 
   
-
-
 names(r2)[names(r2) == "X2018"] <- "2018"
 names(r2)[names(r2) == "X2019"] <- "2019"
 names(r2)[names(r2) == "X2020"] <- "2020"
 
 r2[is.na(r2)] <- 0
 r2$Max <- pmax(r2$`2018`,r2$`2019`,r2$`2020`)
-AD_shp <- sf::st_read(
-"D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\Shp_file\\AD\\lad_000b21a_f\\AB\\AD_RMR_SpatialJoin.shp") 
+AD_shp <- sf::st_read("CHEMIN\AD_RMR_SpatialJoin.shp") 
 
- for (i in 145:146)#:nrow(r2))
+ for (i in 1:nrow(r2))
 {
-  #rmr_file_path <- "D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\Shp_file\\RMR\\31923\\rmr_decoup\\" 
-  #rmr_file_path <- paste0(rmr_file_path, r2$X[i])
-  #rmr_file_path <- paste0(rmr_file_path, ".shp")
-  #rmr_shp <- sf::st_read(rmr_file_path)
- # AD_rmr_shp <- AD_shp[which(as.character(AD_shp$RMRPIDU) == as.character(rmr_shp$RMRPIDU)), ]
   
   for(j in 2:ncol(r2))
   {
     if(r2[i,j] == r2$Max[i])
     {
-      #suhii_file_path <- paste0("D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\SUHII\\Gam_final\\Raster_", colnames(r2[j]))
       suhii_file_path <- paste0(r2$path[i], colnames(r2[j]))
       suhii_file_path <- paste0(suhii_file_path, "\\")
       suhii_file_path <- paste0(suhii_file_path, r2$X[i])
@@ -197,16 +187,12 @@ AD_shp <- sf::st_read(
       names(pts.poly2)[names(pts.poly2) == "as(AD_rmr_shp, \"Spatial\")@data$ADIDU"] <- "ADIDU"
       AD_rmr_shp_sp2 <- merge(AD_rmr_shp_sp, pts.poly2)
       
-  
       name_file_output <- paste0(r2$X[i], "par_AD")
-        rgdal::writeOGR(obj=AD_rmr_shp_sp2, dsn ="D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\SUHII\\Gam_final\\AD_RMR_SUHII", layer =  name_file_output,
+      gdal::writeOGR(obj=AD_rmr_shp_sp2, dsn ="CHEMIN_DU_FICHIER", layer =  name_file_output,
                 driver = "ESRI Shapefile", overwrite_layer = TRUE) 
       break
     }
   }
 }
-
-
-
 ```
 
