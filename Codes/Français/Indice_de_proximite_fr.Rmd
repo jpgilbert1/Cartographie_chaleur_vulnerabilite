@@ -16,10 +16,8 @@ library(stars)
 library(sp)
 ```
 
-
 ## Serveur
-Le calcul de l'indice de proximité, les fichiers de points étaient beaucoup trop important pour être utilisé dans sa forme original. Nous avons donc créer notre propre serveur d'OpenStreet Map. Nous avons suivi cette méthodologie pour créer notre serveur : https://hub.docker.com/r/osrm/osrm-backend/. Nous avonsfaut utiliser un docker, c'est à dire un serveur local à même l'ordinateur. Le service gratuit de la librairie OSRM a une limite de nombre de données qu'on peut mettre dans un appel API. Le serveur qu'on fait en local
-a une limite beaucoup plus importante. permettant l'utilisation de tous les points du Canada pour chacun des points d'aires de diffusion
+Le calcul de l'indice de proximité, les fichiers de points étaient beaucoup trop importants pour être utilisé dans sa forme originale. Nous avons donc créé notre propre serveur d'OpenStreet Map. Nous avons suivi cette méthodologie pour créer notre serveur : https://hub.docker.com/r/osrm/osrm-backend/. Nous avons utilisé un docker, c'est à dire un serveur local à même l'ordinateur. Le service gratuit de la librairie OSRM a une limite de nombre de données qu'on peut mettre dans un appel API. Le serveur qu'on fait en local a une limite beaucoup plus importante, permettant l'utilisation de tous les points du Canada pour chacun des points d'aires de diffusion.
 
 À noter que le serveur fonctionne que si on exécute ce code sur notre ordinateur. Vous devez créer votre propre serveur ou ignorer cette ligne.
 ```{r eval = FALSE}
@@ -27,8 +25,7 @@ options(osrm.server = "http://127.0.0.1:5000/")
 ```
 
 ## Calcul de l'indice de proximité
-On utilise les centroid_AD qui ont été déplacé à l'aide du logiciel d'ArcGIS Pro. Pour plus de détails sur la procédure, consulté la section XX du rapport se retrouvant dans le dossier Rapport.
-
+On utilise les centroïdes d’aires de diffusion qui ont été déplacés à l'aide du logiciel d'ArcGIS Pro. Pour plus de détails sur la procédure, consulter la section XX du rapport se retrouvant dans le dossier 'Rapport'.
 
 ```{r eval = FALSE}
 centroid_AD <- st_read("CHEMIN_DU_FICHIER\\ID_RMR_2_MeanCenter1_deplacer.shp")
@@ -60,4 +57,3 @@ for (k in seq(from = 1, to = nrow(centroid_AD), by = 500))
   }
 }
 ```
-
