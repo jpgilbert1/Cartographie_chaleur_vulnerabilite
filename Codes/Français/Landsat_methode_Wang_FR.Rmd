@@ -1,12 +1,12 @@
 ---
 title: "Sélection_image_Landsat"
-author: "Département "
+author: "Département de géographie - Université Laval"
 date: "25/05/2022"
 output: html_document
 ---
 
 ## Choix des images Landsat
-Rappelons que la méthode de calcul de la température du sol est: An Efficient Framework for Producing Landsat-Based Land Surface Temperature Data Using Google Earth Engine. Les détails de la méthode se retrouve dans l'article scientifique. Le code pour le téléchargement des images se retrouve ici : https://code.earthengine.google.com/?accept_repo=users/wangmmcug/landsat_psc_lst
+Rappelons que la méthode de calcul de la température du sol est: An Efficient Framework for Producing Landsat-Based Land Surface Temperature Data Using Google Earth Engine. Les détails de la méthode se retrouve dans l'article scientifique. Le code pour le téléchargement des images se retrouvent ici : https://code.earthengine.google.com/?accept_repo=users/wangmmcug/landsat_psc_lst
 
 Il est important d'avoir un compte Google Earth Engine, sinon il ne sera pas possible d'avoir accès aux images.
 ```{r eval=FALSE}
