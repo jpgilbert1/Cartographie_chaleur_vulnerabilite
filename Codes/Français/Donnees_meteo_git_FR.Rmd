@@ -12,14 +12,14 @@ library(dplyr)
 ```
 
 ## Lecture des données de stations météorologiques d'Environnement Canada
-Utilise une liste de stations ayant des données d'environnement canada de 2017 à 2020 sauvegarder localement. La liste se retrouve dans le répertoire Data
+Utilise une liste de stations ayant des données d'Environnement Canada de 2017 à 2020 sauvegarder localement. La liste se retrouve dans le répertoire 'Data'.
 
 ```{r}
 liste_station <- read.csv('CHEMIN_DU_FICHIER\\Station Inventory EN_modif_2.csv')
 ```
 
 ## Téléchargement des données météorologiques d'Environnement Canada
-Une fois que chacune des stations météorologiques sont intégrés dans R, il faut télécharger les données météorologiques des serveurs d'Environnement Canada. Ceux-ci offre une méthodologie pour ce faire. Elle se retrouve ici : https://drive.google.com/drive/folders/1WJCDEU34c60IfOnG4rv5EPZ4IhhW9vZH. Elle fait appel au Command line.
+Une fois que chacune des stations météorologiques est intégrée dans R, il faut télécharger les données météorologiques des serveurs d'Environnement Canada. Ceux-ci offrent une méthodologie pour ce faire. Elle se retrouve ici : https://drive.google.com/drive/folders/1WJCDEU34c60IfOnG4rv5EPZ4IhhW9vZH. Elle fait appel au Command line.
 
 
 ```{r eval=FALSE}
@@ -45,7 +45,7 @@ for (i in 1:nrow(liste_station))
 ```
 
 ## Journées chaudes
-Une fois que les données météorologiques pour chacune des stations sont téléchargées, il faut déterminer quelles sont les dates des journées chaudes, pour acquérir les imageries de température du sol adéquates. Nous utilisons une version modifiée de la définition d'une vagues de chaleur de l'INSPQ : https://www.inspq.qc.ca/pdf/publications/1079_IndicateursVigieSanteChaleur.pdf. Selon l'INSPQ, une vague de chaleur doit avoir 3 jours consécutifs de journée avec une température supérieur a 30 celsius et minimal supérieur a 20 celsius. Cependant, en suivant cette définition, nous n'avons pas d'images pour l'ensemble du territoire. Donc, nous utilisons le critère de 30 celsius
+Une fois que les données météorologiques pour chacune des stations sont téléchargées, il faut déterminer quelles sont les dates des journées chaudes, pour acquérir les imageries de température du sol adéquates. Nous utilisons une version modifiée de la définition d'une vague de chaleur de l'INSPQ : https://www.inspq.qc.ca/pdf/publications/1079_IndicateursVigieSanteChaleur.pdf. Selon l'INSPQ, une vague de chaleur doit avoir 3 jours consécutifs de journée avec une température supérieure à 30 Celsius et une température minimale supérieure a 20 Celsius. Cependant, en suivant cette définition, nous n'avons pas d'images pour l'ensemble du territoire. Donc, nous utilisons le critère de 30 Celsius.
 
 ``` {r eval=FALSE}
 
@@ -82,5 +82,3 @@ for (i in 1:length(donnees_meteo))
 fichier_journees_chaudes <- fichier_journees_chaudes[-1,]
 write.csv(fichier_journees_chaudes,"FICHIER_CONTENANT_LES_JOURNÉES_CHAUDES_POUR_CHAQUE_STATION")
 ```
-
-
