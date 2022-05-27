@@ -18,8 +18,7 @@ library(sp)
 
 
 ## Server
-The calculation of the proximity index, the point files were much too large to be used in its original form. So we created our own OpenStreet Map server. We followed this methodology to create our server: https://hub.docker.com/r/osrm/osrm-backend/. We had to use a docker, that is to say a local server on the computer. The free service of the OSRM library has a limit on the amount of data that can be put in an API call. The server that we make locally
-has a much higher limit. allowing the use of all the points of Canada for each of the points of diffusion areas
+The calculation of the proximity index, the point files were much too large to be used in its original form. So we created our own OpenStreet Map server. We followed this methodology to create our server: https://hub.docker.com/r/osrm/osrm-backend/. We had to use a docker, that is to say a local server on the computer. The free service of the OSRM library has a limit on the amount of data that can be put in an API call. The server that we make locally has a much higher limit, allowing the use of all the points of Canada for each of the points of dissemination areas.
 
 Note that the server works only if we execute this code on our computer. You must create your own server or ignore this line.
 
@@ -28,8 +27,7 @@ options(osrm.server = "http://127.0.0.1:5000/")
 ```
 
 ## Calculation of the proximity index
-We use the centroid_ADs that have been moved using ArcGIS Pro software. For more details on the procedure, consult section XX of the report found in the Report folder.
-
+We use the centroid_ADs that have been moved using ArcGIS Pro software. For more details on the procedure, consult section XX of the report found in the 'Rapport' folder.
 
 ```{r eval = FALSE}
 centroid_AD <- st_read("PATH_OF_THE_FILE\\ID_RMR_2_MeanCenter1_deplacer.shp")
@@ -61,4 +59,3 @@ for (k in seq(from = 1, to = nrow(centroid_AD), by = 500))
   }
 }
 ```
-
