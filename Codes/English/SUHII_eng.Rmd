@@ -1,0 +1,197 @@
+---
+title: "SUHII"
+author: "Geogprahy Department - Université Laval"
+date: "13/07/2021"
+output: html_document
+---
+
+```{r eval =FALSE}
+library(raster)
+library(rgdal)
+library(sf)
+library(mgcv)
+```
+
+#Calculation of SUHII with the GAM model. 
+To do this, the code takes the imperviousness, soil temperature, NDVI and NDBI files and makes the spatial join between the data. A SUHII is created for each CMA for each province with the soil temperature image giving the best model. The imperviousness, NDVI and NDBI images are previously clipped with the CMA files in ArcGIS Pro.
+
+The soil imperviousness data are available in the 'Data/Impervious_data' section. The RMR data is available in the 'Data/RMR' section.
+
+The second loop ensures that there is a juxtaposition of a soil temperature image for a CMA. If there is a juxtaposition, the code combines the soil temperature, imperviousness, NDVI and NDBI image. The combined image is checked to ensure that the image is not empty. 
+
+Then, the GAM model is applied. The combined image is transformed into a matrix to properly apply the GAM model. The soil temperature, NDVI and NDBI values are averaged by soil imperviousness level (i.e. an average for 1,2,3, ..., 100).
+
+Often, there are several soil temperature images for a year and a CMA so I keep only the model that fits best to model the data. So, high in the loop, I put a variable named r_squared that is set to 0. Then, if the R2 is higher than 0, the code makes the prediction for that ground temperature image. So, this ensures that SUHII is the best for that CMA for the year looked at. 
+
+In terms of prediction, the best model is taken and predictions are made using the NDVI and NDBI imperviousness data. Once the prediction is made, it is put into a matrix and reclassified using the soil imperviousness raster file by replacing the imperviousness values with the SUHII value. The code makes sure that the raster is clipped properly with the shapefile, then exports the raster file.
+ 
+```{r eval = FALSE}
+raster_isa <- raster("PATH\\prov_QC_reclass_100_2.tif")
+NDVI <- raster("NDVI_DATA")
+NDBI <- raster("NDBI_DATA")
+shp <- readOGR("DATA//RMR//PROVINCE.shp")
+
+filelist_lst <- list.files("LAND_SURFACE_TEMPERATURE_PATH", pattern = ".tif", full.names = TRUE)
+filelist_court_lst <- list.files("CLAND_SURFACE_TEMPERATURE_PATH", pattern = ".tif")
+shp_RMR <- spTransform(shp,
+                       crs(raster_isa))
+rm(shp)
+
+for(ii in 1:nrow(shp_RMR))
+{
+  raster_isa_crop <-crop(raster_isa,extent(shp_RMR[ii,] ))
+  raster_isa_crop_mask <- mask(raster_isa_crop, shp_RMR[ii,] )
+  rm(raster_isa_crop)
+  raster_isa_crop_mask[raster_isa_crop_mask < 0 ] <- NA
+  raster_isa_crop_mask[raster_isa_crop_mask > 100 ] <- NA
+  raster_isa_crop_mask <- round(raster_isa_crop_mask)
+  r_carre <- 0
+  for(i in  1:length(filelist_lst))
+  {
+    print(i)
+    tryCatch({
+      lst <- raster(filelist_lst[i])
+      if(lst@data@max > 2100000000)
+      {
+        lst = lst/100
+        lst[lst == 0] <- NA
+      }
+      rr_lst <-crop(lst,extent(shp_RMR[ii,] ))
+      rr_lst <- mask(rr_lst, shp_RMR[ii,] )
+      ex <- extent(raster_isa_crop_mask)
+      rr_lst <- crop(rr_lst, ex)
+      rm(lst, ex)
+        
+      isa <- crop(raster_isa_crop_mask, extent(rr_lst))
+      r1 <- resample(isa, rr_lst)
+      
+      isa <- raster(vals=values(r1),ext=extent(rr_lst),crs=crs(rr_lst),
+                        nrows=dim(rr_lst)[1],ncols=dim(rr_lst)[2])
+      
+      rr_NDVI <- crop(NDVI, extent(rr_lst))
+      rr_NDVI <- raster(vals=values(rr_NDVI),ext=extent(rr_lst),crs=crs(rr_lst),
+                        nrows=dim(rr_lst)[1],ncols=dim(rr_lst)[2])
+      
+      rr_NDBI <- crop(NDBI, extent(rr_lst))
+      rr_NDBI <- raster(vals=values(rr_NDBI),ext=extent(rr_lst),crs=crs(rr_lst),
+                        nrows=dim(rr_lst)[1],ncols=dim(rr_lst)[2])
+      
+      stack_image <- stack(isa,rr_NDVI, rr_NDBI, rr_lst)
+      rm(isa, rr_NDVI, rr_NDBI)
+      
+      v <- data.frame(na.omit(values(stack_image)))
+      names(v) <- c('ISA',  'NDVI', 'NDBI','Mean_LST')
+      if(nrow(v) != 0)
+      {
+          v$ISA <- round(v$ISA)
+          mean_lst <- aggregate(v, list(v$ISA), mean)
+          if(nrow(mean_lst) > 4)
+          {
+          g <- gam(Mean_LST ~ s(ISA) +NDVI+NDBI,data=mean_lst)
+          if(summary(g)$r.sq > r_carre)
+          {
+            r_carre <- summary(g)$r.sq
+            print(summary(g)$r.sq)
+            
+            #prediction
+            pred <- predict(g, mean_lst)
+            pred <- data.frame(pred)
+            pred$SUHII <- NA
+            pred <- cbind(mean_lst, pred)
+  
+            for(hh in 1:nrow(data.frame(pred)))
+            {
+             if(hh == 1)
+              {
+                pred$SUHII[hh] <- 0
+              }else
+              {
+                pred$SUHII[hh] <- pred$pred[hh] - pred$pred[hh-1] +  pred$SUHII[hh-1]
+              }
+            }
+            rclmat <- matrix(pred[,c(2,7)], ncol=2 )
+            pred_matrix <- as.matrix(pred[,c(2,7)])
+  
+            pred_2 <- raster::reclassify(raster_isa_crop_mask,pred_matrix)
+            pred_2 [pred_2 < 0 ] <- NA
+            pred_2 [pred_2  > 50] <- NA
+            plot(pred_2)
+            
+            nom_fichier_raster <- paste0("PATH\\SUHII_",shp_RMR@data$RMRIDU[ii]) 
+            nom_fichier_raster <- paste0(nom_fichier_raster,"_") 
+            nom_fichier_raster <- paste0(nom_fichier_raster, filelist_court_lst[i])
+            writeRaster(pred_2 , nom_fichier_raster, 'GTiff', overwrite=TRUE)
+            
+             nom_fichier <- paste0("PATH\\R2_YEAR\\SUHII_", shp_RMR@data$RMRIDU[ii])
+             
+              nom_fichier <- paste0(nom_fichier, ".txt")
+              
+              write.table(r_carre , file = nom_fichier, sep = "\t",
+              row.names = TRUE, col.names = NA)
+          }
+        }
+      }
+    }, error=function(e){})
+  } 
+}
+```
+#Incorporation of SUHII images in the broadcast areas
+Finally, we need to take the best model according to the year. This section of code does that. First, we need to read the R2 file. This is done by hand, taking the text files and putting the R2 value for each CMA and year. 
+
+The scattering area file is found in the Data folder
+
+Rename the columns of R2. The first column should be the value of the RMRPIDU. The NA is set to 0. Pmax is used to get the maximum value for each row and copy it to the max column. Thus, the year that is == a max is the best model to take. The file of diffusion areas for Canada is then read.
+
+For the rows, fetch me the RMR file. Then, keep only the diffusion area polygons that equal the RMRPIDU of the CMA. Then loops over the columns to determine what year the Pmax value is. When it is the case, import the corresponding SUHII raster. The raster is transformed into a point. Then, use the scattering area file cut according to the CMA. The scatter area file is transformed into SpatialPolygon to perform a spatial join. This is done with the 'over' function. It averages the point values that overlay each of the scattering areas. It then joins the averages to the scattering area file. So we have to join the two dataframes. Finally, export the file in shapefile.
+
+```{r eval = FALSE}
+library(ggplot2)
+
+r2 <- read.table("PATH_WHERE_THE_FILE_CONTAINS_THE_R2_VALUES.csv", sep =";", header = TRUE)
+
+r2$X <- as.character(r2$X)
+r2$X[1] <-"001" 
+r2$X[2] <-"010"
+r2$X[3] <-"011"
+r2$X[4] <-"015" 
+r2$X_char <- r2$X
+r2$X <- paste("SUHII_", r2$X, sep="") 
+  
+names(r2)[names(r2) == "X2018"] <- "2018"
+names(r2)[names(r2) == "X2019"] <- "2019"
+names(r2)[names(r2) == "X2020"] <- "2020"
+
+r2[is.na(r2)] <- 0
+r2$Max <- pmax(r2$`2018`,r2$`2019`,r2$`2020`)
+AD_shp <- sf::st_read("PATH\\AD_RMR_SpatialJoin.shp") 
+
+ for (i in 1:nrow(r2))
+{
+  
+  for(j in 2:ncol(r2))
+  {
+    if(r2[i,j] == r2$Max[i])
+    {
+      suhii_file_path <- paste0(r2$path[i], colnames(r2[j]))
+      suhii_file_path <- paste0(suhii_file_path, "\\")
+      suhii_file_path <- paste0(suhii_file_path, r2$X[i])
+      suhii_file_path <- paste0(suhii_file_path, ".tif")
+      suhii_raster <- raster(suhii_file_path)
+      suhii_point <- rasterToPoints(suhii_raster, spatial = TRUE)
+      
+      AD_rmr_shp<- AD_shp[which(AD_shp$RMRIDU==r2$X_char[i]),]
+      AD_rmr_shp_sp <- as(AD_rmr_shp, "Spatial")
+      suhii_point_crs <- spTransform(suhii_point, crs(AD_rmr_shp_sp))
+      pts.poly <- sp::over(AD_rmr_shp_sp,suhii_point_crs,fn=mean)
+      pts.poly2 <- cbind(as.data.frame(as(AD_rmr_shp, "Spatial")@data$ADIDU), pts.poly)
+      names(pts.poly2)[names(pts.poly2) == "as(AD_rmr_shp, \"Spatial\")@data$ADIDU"] <- "ADIDU"
+      AD_rmr_shp_sp2 <- merge(AD_rmr_shp_sp, pts.poly2)
+      
+      name_file_output <- paste0(r2$X[i], "par_AD")
+      gdal::writeOGR(obj=AD_rmr_shp_sp2, dsn ="PATH_FILE", layer =  name_file_output,
+                driver = "ESRI Shapefile", overwrite_layer = TRUE) 
+      break
+    }
+  }
+}
+```
