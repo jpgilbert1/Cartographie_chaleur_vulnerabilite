@@ -15,6 +15,8 @@ library(mgcv)
 #Calcul des SUHII avec le modèle GAM. 
 Pour ce faire, le code prend les fichiers d'imperméabilité, de température du sol, du NDVI et du NDBI fait la jointure spatiale entre les données. Un SUHII est créé pour chaque RMR pour chaque province avec l'image de température du sol donnant le meilleur modèle. Les images d'imperméabilité, de NDVI et de NDBI sont préalablement découpées avec les fichiers de RMR dans ArcGIS Pro.
 
+Les données d'imperméabilité du sol sont disponibles dans la section 'Data/Impervious_data'. Les données de RMR sont disponibles dans la section 'Data/RMR'
+
 La deuxième boucle s'assure qu'il y a une juxtaposition d'une image de température du sol pour une RMR. S’il y a juxtaposition, le code combine l'image de température du sol, d'imperméabilité, de NDVI et de NDBI. L'image combinée est vérifiée pour s'assurer que l'image n'est pas vide. 
 
 Par la suite, le modèle GAM est appliqué. L'image combinée est transformée en matrice pour pouvoir appliquer adéquatement le modèle GAM. On fait la moyenne des valeurs de température du sol, de NDVI et de NDBI par niveau d'imperméabilité du sol (donc une moyenne pour 1,2,3, ..., 100).
@@ -24,20 +26,19 @@ Souvent, il y a plusieurs images de température du sol pour une année et une R
 En termes de prédiction, le meilleur modèle est pris et les prédictions sont faites à l'aide des données d'imperméabilité du NDVI et du NDBI. Une fois la prédiction faite, le tout est mis dans une matrice et est reclassifié à l'aide du fichier raster d'imperméabilité du sol en remplaçant les valeurs d'imperméabilité par la valeur du SUHII. Le code s'assure que le raster est découpé comme il faut avec le shapefile, puis il exporte le fichier raster.
  
 ```{r eval = FALSE}
-raster_isa <- raster("D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\Impermeabilite_des_sols\\QC\\prov_QC_reclass_100_2.tif")
-NDVI <- raster("D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\NDVI\\QC_2018\\NDVI_2018.tif")
-NDBI <- raster("D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\NDBI\\QC_2018\\NDBI_2018.tif")
-shp <- readOGR("D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\Shp_file\\RMR\\RMR_2021\\QC.shp")
+raster_isa <- raster("CHEMIN\\prov_QC_reclass_100_2.tif")
+NDVI <- raster("DONNÉES_NDVI")
+NDBI <- raster("DONNÉES_NDBI")
+shp <- readOGR("DATA//RMR//PROVINCE.shp")
 
-filelist <- list.files("D:\\tempo\\Landsat_methode_Wang\\QC_2017\\cut_3", pattern = ".tif", full.names = TRUE)
-filelist_court <- list.files("D:\\tempo\\Landsat_methode_Wang\\QC_2017\\cut_3", pattern = ".tif")
+filelist_lst <- list.files("CHEMIN_TEMPERATURE_DU_SOL", pattern = ".tif", full.names = TRUE)
+filelist_court_lst <- list.files("CHEMIN_TEMPERATURE_DU_SOL", pattern = ".tif")
 shp_RMR <- spTransform(shp,
                        crs(raster_isa))
 rm(shp)
 
 for(ii in 1:nrow(shp_RMR))
 {
-
   raster_isa_crop <-crop(raster_isa,extent(shp_RMR[ii,] ))
   raster_isa_crop_mask <- mask(raster_isa_crop, shp_RMR[ii,] )
   rm(raster_isa_crop)
@@ -45,11 +46,11 @@ for(ii in 1:nrow(shp_RMR))
   raster_isa_crop_mask[raster_isa_crop_mask > 100 ] <- NA
   raster_isa_crop_mask <- round(raster_isa_crop_mask)
   r_carre <- 0
-  for(i in  1:length(filelist))
+  for(i in  1:length(filelist_lst))
   {
     print(i)
     tryCatch({
-      lst <- raster(filelist[i])
+      lst <- raster(filelist_lst[i])
       if(lst@data@max > 2100000000)
       {
         lst = lst/100
@@ -116,12 +117,12 @@ for(ii in 1:nrow(shp_RMR))
             pred_2 [pred_2  > 50] <- NA
             plot(pred_2)
             
-            nom_fichier_raster <- paste0("D:\\tempo\\Landsat_methode_Wang\\QC_2018\\SUHII2_",shp_RMR@data$RMRIDU[ii]) 
+            nom_fichier_raster <- paste0("CHEMIN\\SUHII_",shp_RMR@data$RMRIDU[ii]) 
             nom_fichier_raster <- paste0(nom_fichier_raster,"_") 
-            nom_fichier_raster <- paste0(nom_fichier_raster, filelist_court[i])
+            nom_fichier_raster <- paste0(nom_fichier_raster, filelist_court_lst[i])
             writeRaster(pred_2 , nom_fichier_raster, 'GTiff', overwrite=TRUE)
             
-             nom_fichier <- paste0("D:\\Université Laval\\Cartographie vulnérabilité vagues de chaleur accamblante - Documents\\General\\Data\\SUHII\\Gam_final\\R2_2019\\SUHII_", shp_RMR@data$RMRIDU[ii])
+             nom_fichier <- paste0("CHEMIN\\R2_ANNEE\\SUHII_", shp_RMR@data$RMRIDU[ii])
              
               nom_fichier <- paste0(nom_fichier, ".txt")
               
