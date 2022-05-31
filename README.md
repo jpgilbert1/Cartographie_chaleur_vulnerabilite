@@ -26,4 +26,7 @@ This repository contains the codes used in the development of the vulnerability 
 
 ### File organization
 #### Codes
-The "Codes" folder contains the codes, whose comments have been translated into French and English, used to calculate the sensitivity, the coping capacity, the acquisition of meteorological data from Environment Canada, and the complete methodology for the calculation of the exposure index
+The "Codes" folder contains the codes, whose comments have been translated into French and English, used to calculate the sensitivity, the coping capacity, the acquisition of meteorological data from Environment Canada, and the complete methodology for the calculation of the exposure index.
+
+#### Data
+The "Data" folder contains some data that we have modified ourselves for the creation of the indices. First, there is the set of Canada's dissemination areas for 2021 for each of the census metropolitan areas, the centroid of the dissemination areas is moved according to the population weighting in the dissemination blocks, the soil imperviousness data and the census metropolitan areas data by provinces.
