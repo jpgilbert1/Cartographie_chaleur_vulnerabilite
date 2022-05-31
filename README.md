@@ -13,6 +13,9 @@ Ce répertoire contient les codes ayant servi à au développement de l'indice d
 #### Codes
 Le dossier « Codes » contient les codes, dont les commentaires ont été traduit en français et en anglais, servant au calcul de la sensibilité, de la capacité à faire face, l'acquisition des données météorologiques d'Environnement Canada, et la méthodologie complète pour le calcul de l'indice d'exposition.
 
+#### Data
+Le dossier « Data » contient certaines données que nous avons nous-même modifié pour la création des indices. D'abord, il a y l'ensemble des aires de diffusion du Canada pour 2021 pour chacune des régions métropolitaines de recensement.
+
 ## English version
 ### Description of the project
 The increased frequency and intensity of extreme weather events caused by climate change increases the threat to population health. Extreme heat waves have an impact on population mortality and morbidity. For example, in the summer of 2010, Quebec was hit by an unprecedented heat wave that significantly increased the number of emergency room admissions and crude mortality rates in some regions of Quebec. More recently, a study on the effects of the heat wave that occurred from June 29 to July 5, 2018 in the Laval region showed that people living in areas of high vulnerability were 1.5 times more likely to die than those in areas of lower vulnerability. However, the vulnerability and exposure of the population to heat waves vary in time as well as in space, making certain groups more at risk.
