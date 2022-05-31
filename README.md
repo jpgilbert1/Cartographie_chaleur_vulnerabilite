@@ -14,7 +14,7 @@ Ce répertoire contient les codes ayant servi à au développement de l'indice d
 Le dossier « Codes » contient les codes, dont les commentaires ont été traduit en français et en anglais, servant au calcul de la sensibilité, de la capacité à faire face, l'acquisition des données météorologiques d'Environnement Canada, et la méthodologie complète pour le calcul de l'indice d'exposition.
 
 #### Data
-Le dossier « Data » contient certaines données que nous avons nous-même modifié pour la création des indices. D'abord, il a y l'ensemble des aires de diffusion du Canada pour 2021 pour chacune des régions métropolitaines de recensement, le centroïde des aires de diffusion est déplacé selon la pondération de la population dans les 
+Le dossier « Data » contient certaines données que nous avons nous-même modifié pour la création des indices. D'abord, il a y l'ensemble des aires de diffusion du Canada pour 2021 pour chacune des régions métropolitaines de recensement, le centroïde des aires de diffusion est déplacé selon la pondération de la population dans les îlots de diffusion, les données d'imperméabilités du sol et les données des régions métropolitaines de recensement selon les provinces.
 
 ## English version
 ### Description of the project
