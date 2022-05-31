@@ -10,7 +10,7 @@ Les effets de la chaleur sont majoritairement modulés par la capacité d’une 
 Ce répertoire contient les codes ayant servi à au développement de l'indice de vulnérabilité et de l'exposition. De plus, quelques bases de données que nous avons modifiées sont aussi déposé dans le répertoire pour des fins de reproductibilité.
 
 ### Organisation des fichiers
-#### Codesl
+#### Codes
 Le dossier « Codes » contient les codes, dont les commentaires ont été traduit en français et en anglais, servant au calcul de la sensibilité, de la capacité à faire face, l'acquisition des données météorologiques d'Environnement Canada, et la méthodologie complète pour le calcul de l'indice d'exposition.
 
 ## English version
@@ -20,3 +20,7 @@ The increased frequency and intensity of extreme weather events caused by climat
 The effects of heat are largely modulated by an individual's ability to access resources, including adequate housing. Government and non-government organizations, whether local, regional or provincial, are dealing with the social and economic consequences associated with climate change. The objective of this project is to develop an interactive online mapping application that provides valid information on the geographic distribution of vulnerability and exposure of major Canadian communities to heat waves. This mapping will represent the geographic distribution of vulnerability and exposure, specifying, for each geographic unit, their intensity. Armed with this information, government authorities will be able to intervene to reduce the health effects of heat waves and respond more appropriately when these hazards occur. This tool, accessible to the general public, will also serve as a tool to raise awareness of social, health and environmental inequalities in the face of climate change.  
 
 This repository contains the codes used in the development of the vulnerability and exposure index. In addition, some of the databases that we modified are also deposited in the directory for replication purposes.
+
+### File organization
+#### Codes
+The "Codes" folder contains the codes, whose comments have been translated into French and English, used to calculate the sensitivity, the coping capacity, the acquisition of meteorological data from Environment Canada, and the complete methodology for the calculation of the exposure index
