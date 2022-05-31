@@ -10,8 +10,8 @@ Les effets de la chaleur sont majoritairement modulés par la capacité d’une 
 Ce répertoire contient les codes ayant servi à au développement de l'indice de vulnérabilité et de l'exposition. De plus, quelques bases de données que nous avons modifiées sont aussi déposé dans le répertoire pour des fins de reproductibilité.
 
 ### Organisation des fichiers
-#### Codes
-Le dossier « Codes » contient les 
+#### Codesl
+Le dossier « Codes » contient les codes, dont les commentaires ont été traduit en français et en anglais, servant au calcul de la sensibilité, de la capacité à faire face, l'acquisition des données météorologiques d'Environnement Canada, et la méthodologie complète pour le calcul de l'indice d'exposition.
 
 ## English version
 ### Description of the project
