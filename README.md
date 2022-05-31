@@ -9,6 +9,10 @@ Les effets de la chaleur sont majoritairement modulés par la capacité d’une 
 
 Ce répertoire contient les codes ayant servi à au développement de l'indice de vulnérabilité et de l'exposition. De plus, quelques bases de données que nous avons modifiées sont aussi déposé dans le répertoire pour des fins de reproductibilité.
 
+### Organisation des fichiers
+#### Codes
+Le dossier « Codes » contient les 
+
 ## English version
 ### Description of the project
 The increased frequency and intensity of extreme weather events caused by climate change increases the threat to population health. Extreme heat waves have an impact on population mortality and morbidity. For example, in the summer of 2010, Quebec was hit by an unprecedented heat wave that significantly increased the number of emergency room admissions and crude mortality rates in some regions of Quebec. More recently, a study on the effects of the heat wave that occurred from June 29 to July 5, 2018 in the Laval region showed that people living in areas of high vulnerability were 1.5 times more likely to die than those in areas of lower vulnerability. However, the vulnerability and exposure of the population to heat waves vary in time as well as in space, making certain groups more at risk.
