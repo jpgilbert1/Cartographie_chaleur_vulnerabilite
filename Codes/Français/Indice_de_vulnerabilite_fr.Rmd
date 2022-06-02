@@ -1,0 +1,222 @@
+---
+title: "Indice_de_vulnerabilité_FR"
+author: "Département de géographie - Université Laval"
+date: "01/06/2022"
+output: html_document
+---
+# But de la première partie : Extraction des données du recensement de la population de 2016 par Statistique Canada
+``````{r eval = FALSE}
+library(tidyverse)
+library(cancensus)
+library(sf)
+library(EFAtools)
+library(FactoMineR)
+library(factoextra)
+library(BBmisc)
+library(rgdal)
+```
+
+# Données Statistique Canada 
+
+Afin d'accélérer les performances, de réduire l'utilisation des quotas de l'API et de limiter les appels réseau inutiles, configurez un répertoire de cache persistant en définissant des options
+```{r eval = FALSE}
+cancensus.cache_path = "CHEMIN_DU_REPERTOIRE"
+```
+
+Vous devez avoir votre clé d'accès pour accéder au répertoire. Vous trouverez la procédure vous procurez cette clé ici : https://cran.r-project.org/web/packages/cancensus/vignettes/cancensus.html
+
+```{r eval = FALSE}
+options(cancensus.api_key = "API_KEY")
+```
+
+Nous utilisons le recensement de la population 2016 (CA16) en attendant que le recensement de la population 2021 (CA21) soit complètement disponible. La variable « ListRegion » permet de savoir le code pour chacune des provinces. La variable « ListVector » permet de savoir l'ensemble des données disponible pour le recensement de la population 2016
+
+```{r eval = FALSE}
+ListRegion <- list_census_regions("CA16")
+ListVector <- list_census_vectors("CA16")
+```
+
+# Télécharger des variables pour l'ensemble du Canada à l'échelle des AD ----
+À la ligne regions, choisir la région désirée. Ici, c'est la province du Québec. Pour modifier cela, se référé à la variable « ListRegion ». Il est possible de modifier les variables utilisées. Cependant, assurez-vous de modifier les lignes plus bas pour ajuster le code à vos variables. 
+```{r eval = FALSE}
+DataStatCan_Canada <-
+  get_census(
+    dataset = 'CA16',
+    regions = list(PR = '24'),
+    vectors = c(
+      Jeune = "v_CA16_7",
+      Vieux = "v_CA16_244",
+      TotAge = "v_CA16_1",
+      PasDipl = "v_CA16_5054",
+      TotDipl = "v_CA16_5051",
+      Immig1116 = "v_CA16_3432",
+      TotImmig = "v_CA16_3405",
+      PasAngFr = "v_CA16_524",
+      TotLang = "v_CA16_512",
+      Pers1 = "v_CA16_419",
+      TailleMen = "v_CA16_418",
+      ParentMono = "v_CA16_488",
+      TotFam = "v_CA16_484",
+      Locataire = "v_CA16_4838",
+      Tenure = "v_CA16_4836",
+      FaibleRev = "v_CA16_2549",
+      Loyer30 = "v_CA16_4899",
+      Reparation = "v_CA16_4872",
+      ConditionLog = "v_CA16_4870",
+      Etages5 = "v_CA16_410",
+      TypeLog = "v_CA16_408",
+      Av1960 = "v_CA16_4863",
+      Av1980 = "v_CA16_4864",
+      AgeLog = "v_CA16_4862",
+      DensPop = "v_CA16_406"),
+    level = 'DA',
+    geo_format = NA)
+```
+
+# Changer les noms des variables et faire les calculs ----
+Nous utilisons proportions de chacune des variables dans le calcul de l'indice de la sensibilité. Une justification détaillée de ce choix est disponible dans la section « Rapport » du GitHub<<
+```{r eval = FALSE}
+DataStatCan_Canada <- DataStatCan_Canada %>% mutate (
+  AgeSens = ((Jeune + Vieux)  / TotAge * 100),
+  SansDiplo = (PasDipl / TotDipl * 100),
+  ImmiRecen = (Immig1116 / TotImmig * 100),
+  LangueOff = (PasAngFr / TotLang * 100),
+  PersSeule = (Pers1 / TailleMen * 100),
+  FamMono = (ParentMono / TotFam * 100),
+  LogLoue = (Locataire / Tenure * 100),
+  FaibleRev = (FaibleRev),
+  Loyer30 = (Loyer30),
+  RepaMaj = (Reparation / ConditionLog * 100),
+  Res5etage = (Etages5 / TypeLog * 100),
+  Log1980 = ((Av1960 + Av1980) / AgeLog * 100),
+  DensitePop = (DensPop))
+```
+
+# Importer les données pour les aires de diffusion 
+D'abord, on importe le fichier en format shapefile. Puis, il faut faire la jointure entre les aires de diffusion et les données du recensement. La clé de la jointure est l'ADIDU pour le fichier shapefile et GeoUID pour les données de recensement. Ensuite, il faut retirer toutes les variables qui ne sont pas nécessaires pour l'ACP. Finalement, il faut retirer les aires de diffusion ayant des valeurs manquantes (NA)
+```{r eval = FALSE}
+Data_AD_QC <- st_read("FICHIER_AIRE_DE_DIFFUSION.shp")
+DataVulnerabilite_QC <- merge(x = Data_AD_QC, y = DataStatCan_Canada, by.x = "ADIDU", by.y = "GeoUID")
+DataVulnerabilite_QC <- subset(DataVulnerabilite_QC, select = c(ADIDU, AgeSens, SansDiplo,
+                                                                ImmiRecen, LangueOff, PersSeule, FamMono,
+                                                                LogLoue, FaibleRev, Loyer30, RepaMaj, Res5etage,
+                                                                Log1980, DensitePop))
+DataVulnerabilite_QC <- na.omit(DataVulnerabilite_QC)
+```
+
+# DEUXIÈME PARTIE : RÉALISATION DE L'ANALYSE EN COMPOSANTES PRINCIPALES ----
+Ici, il y a la création des noms de ligne è l'aide des identificateurs uniques d'aire de diffusion (variable ADIDU), le retirement de la géométrie, et la création des noms de lignes.
+
+```{r eval = FALSE}
+SensibiliteQC_avecID <- subset(
+  DataVulnerabilite_QC,
+  select = c(
+    ADIDU,
+    AgeSens,
+    SansDiplo,
+    ImmiRecen,
+    LangueOff,
+    PersSeule,
+    FamMono,
+    LogLoue,
+    FaibleRev,
+    Loyer30,
+    RepaMaj,
+    Res5etage,
+    Log1980)) 
+
+SensibiliteQC_avecID <- st_set_geometry(SensibiliteQC_avecID, NULL)
+rownames(SensibiliteQC_avecID) <- make.names(SensibiliteQC_avecID[,1], unique = TRUE)
+
+```
+
+Cependant, lors de la création de noms pour les lignes, la lettre X c'est ajouté automatiquement. Cette fonction a pour but de retirer la lettre X devant le numéro des lignes dans le dataframe 
+```{r eval = FALSE}
+destroyX_S = function(es) {
+  f = es
+  for (row in c(1:nrow(f))) {
+    # for each column in dataframe
+    if (startsWith(rownames(f)[row], "X") == TRUE)  {
+      # if starts with 'X' ..
+      rownames(f)[row] <-
+        substr(rownames(f)[row], 2, 100) # get rid of it
+    }
+  }
+  assign(deparse(substitute(es)), f, inherits = TRUE) # assign corrected data to original name
+}
+
+destroyX_S(SensibiliteQC_avecID)
+```
+
+
+#### Créer un dataframe pour l'indice de sensibilité seulement ----
+Garder seulement les variables quantitatives.
+```{r eval = FALSE}
+SensibiliteQC <- subset(SensibiliteQC_avecID,
+                        select = c(
+                          AgeSens,
+                          SansDiplo,
+                          ImmiRecen,
+                          LangueOff,
+                          PersSeule,
+                          FamMono,
+                          LogLoue,
+                          FaibleRev,
+                          Loyer30,
+                          RepaMaj,
+                          Res5etage,
+                          Log1980))
+
+Matrice_SensibiliteQC <- cor(SensibiliteQC)
+print(Matrice_SensibiliteQC)
+```
+
+#### Calculer le KMO ----
+Permet de déterminer si l'ACP est de bonnes qualité.
+```{r eval = FALSE}
+KMO(Matrice_SensibiliteQC)
+```
+
+#### Calculer les résultats de l'ACP ----
+scale.unit permet de standardiser les données. Suite a des tests préliminaires, nous savons qu'avec les données actuelles, seulement 5 composantes seront conservées dans les résultats finaux. Ces composantes sont incluses dans l'option « ncp = 5 ». Puis, on obtient les valeurs propres et la variance expliquée. Finalement, on visualise le tableau synthèse des valeurs propres et de la variance expliquée pour chacune des composantes et le graphique de la variance expliquée par chaque composante.
+```{r eval = FALSE}
+ACP_Sensibilite <- PCA(SensibiliteQC, scale.unit = TRUE, ncp = 5, graph = FALSE)
+print(ACP_Sensibilite)
+
+EigVal_Sensibilite <- get_eigenvalue(ACP_Sensibilite)
+EigVal_Sensibilite <- as.data.frame(EigVal_Sensibilite)
+
+fviz_eig(ACP_Sensibilite, addlabels = TRUE) 
+```
+
+#### Calculer les poids locaux (scores) ----
+Exporter les poids locaux pour chaque aire de diffusion
+Transformer la matrice en dataframe
+```{r eval = FALSE}
+Scores_Sensibilite <- ACP_Sensibilite$ind$coord 
+Scores_Sensibilite <- data.frame(Scores_Sensibilite)
+head(Scores_Sensibilite)
+```
+#### Calculer l'indice de sensibilité ----
+Conserver seulement l'indice de sensibilité. ATTENTION, ceci est a modifié en fonction du nombre de composantes gardées.
+Puis, l'indice est standardisé entre 0 et 1. Finalement, l'indice est joint au fichier géospatial puis est exporté en shapefiles. L'indice de sensibilité est terminé.
+```{r eval = FALSE}
+Indice_Sensibilite2 <- Scores_Sensibilite %>% mutate(IndSensib = ((Dim.1 * (EigVal_Sensibilite$variance.percent[1] / EigVal_Sensibilite$cumulative.variance.percent[5])) +
+                                                                   (Dim.2 * (EigVal_Sensibilite$variance.percent[2] / EigVal_Sensibilite$cumulative.variance.percent[5])) +
+                                                                   (Dim.3 * (EigVal_Sensibilite$variance.percent[3] / EigVal_Sensibilite$cumulative.variance.percent[5])) +
+                                                                   (Dim.4 * (EigVal_Sensibilite$variance.percent[4] / EigVal_Sensibilite$cumulative.variance.percent[5]) +
+                                                                   (Dim.5 * (EigVal_Sensibilite$variance.percent[5] / EigVal_Sensibilite$cumulative.variance.percent[5]))))) 
+
+Indice_Sensibilite$IndSensi <- normalize(Indice_Sensibilite$IndSensib, method = "range", range = c(0, 1))  entre 0 et 1
+
+summary(Indice_Sensibilite) 
+
+Indice_Sensibilite <- subset(Indice_Sensibilite, select = IndSensi)
+
+DataVulnerabilite_QC <- bind_cols(DataVulnerabilite_QC, Indice_Sensibilite)
+
+writeOGR(obj=as(DataVulnerabilite_QC,"Spatial"), dsn = "CHEMIN_DU_DOSSIER_SAUVEGARDE", layer = "indice_sen",  driver = "ESRI Shapefile", overwrite_layer = TRUE)
+```
+
+
+
