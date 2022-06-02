@@ -58,4 +58,6 @@ for (k in seq(from = 1, to = nrow(centroid_AD), by = 500))
     break
   }
 }
+nom_fichier <- paste0("D:\\Universit? Laval\\Cartographie vuln?rabilit? vagues de chaleur accamblante - Documents\\General\\Data\\Capacite\\CANADA\\cultural_art_facilities\\ODCAF_V1.0\\ODCAF_V1.0\\Indice_proximite_par_AD_et_RMR\\cinema_v2")
+writeOGR(obj=as(centroid_AD,"Spatial"), dsn = nom_fichier, layer = "cinema_v2",  driver = "ESRI Shapefile", overwrite_layer = TRUE)
 ```
