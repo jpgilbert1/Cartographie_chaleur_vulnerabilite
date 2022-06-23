@@ -14,6 +14,7 @@ library(FactoMineR)
 library(factoextra)
 library(BBmisc)
 library(rgdal)
+a
 ```
 
 # Statistics Canada data 
