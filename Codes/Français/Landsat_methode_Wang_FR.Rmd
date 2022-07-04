@@ -19,7 +19,7 @@ extraction_date <- function(df)
 {#' extraction_date
 #'
 #' @param df 
-#'extrait les dates de la colonne date et les met danss leur propre colone
+#'extrait les dates de la colonne date et les met dans leur propre colone
 #'
 #' @return df avec trois nouveaux champs, Year, month et day
 #' @export
@@ -35,7 +35,7 @@ extraction_date <- function(df)
 
 #Terre-Neuve et Labrador
 ```{r eval=FALSE}
-region_TNL <- ee$Geometry$BBox(-59.93, 47.00, -50.46, 51.25)
+region_TNL <- ee$Geometry$BBox(-59.93, 47.00, -50.46, 51.25) #Coordonnées d'un polygone recouvrant Terre-Neuve
 image_TNL_2018 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2018-05-01', '2018-08-31')$filterBounds(region_TNL)
 image_TNL_2019 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2019-05-01', '2019-08-31')$filterBounds(region_TNL)
 image_TNL_2020 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2020-05-01', '2020-08-31')$filterBounds(region_TNL)
@@ -60,23 +60,23 @@ image_TNL_2020_df$Path <- 1
 
 for (i in 1:length(image_TNL_2018$features))
 {
-  image_TNL_2018_df$Date[i] <- image_TNL_2018$features[i][[1]]$properties$DATE_ACQUIRED
-  image_TNL_2018_df$Row[i] <- image_TNL_2018$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_TNL_2018_df$Path[i] <- image_TNL_2018$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_TNL_2018_df$Date[i] <- image_TNL_2018$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_TNL_2018_df$Row[i] <- image_TNL_2018$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_TNL_2018_df$Path[i] <- image_TNL_2018$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_TNL_2019$features))
 {
-  image_TNL_2019_df$Date[i] <- image_TNL_2019$features[i][[1]]$properties$DATE_ACQUIRED
-  image_TNL_2019_df$Row[i] <- image_TNL_2019$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_TNL_2019_df$Path[i] <- image_TNL_2019$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_TNL_2019_df$Date[i] <- image_TNL_2019$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_TNL_2019_df$Row[i] <- image_TNL_2019$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_TNL_2019_df$Path[i] <- image_TNL_2019$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_TNL_2020$features))
 {
-  image_TNL_2020_df$Date[i] <- image_TNL_2020$features[i][[1]]$properties$DATE_ACQUIRED
-  image_TNL_2020_df$Row[i] <- image_TNL_2020$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_TNL_2020_df$Path[i] <- image_TNL_2020$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_TNL_2020_df$Date[i] <- image_TNL_2020$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_TNL_2020_df$Row[i] <- image_TNL_2020$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_TNL_2020_df$Path[i] <- image_TNL_2020$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 image_TNL_2018_df <- extraction_date(image_TNL_2018_df)
@@ -91,7 +91,7 @@ image_TNL_2020_df <- image_TNL_2020_df[,c(-1:-2)]
 Image_dispo_TNL <- do.call('rbind', list(image_TNL_2018_df,image_TNL_2019_df,image_TNL_2020_df))
 Image_journee_chaude_TNL <- Image_dispo_TNL[1,]
 
-#va cherche le fichier qui est les journees chaudes, soit 30 celsius ou plus comme t maximal dans la journee
+#va chercher le fichier qui est les journees chaudes, soit 30 celsius ou plus comme t maximal dans la journee
 donnee_meteo <- read.csv2("FICHIER_JOURNÉES_CHAUDES", sep=",")
 donnee_station <- read.csv2("CHEMIN_DU_FICHIER\\Station Inventory EN_2.csv", sep = ",")
 donnee_meteo_2 <- merge(donnee_meteo, donnee_station, by.x = "ID.climatologique", by.y = "Climate.ID")
@@ -118,7 +118,7 @@ write.csv(Image_journee_chaude_TNL, "CHEMIN_DU_FICHIER_CONTENANT_LES_INFORMATION
 
 #Ontario sud
 ```{r eval=FALSE}
-region_ont_sud <- ee$Geometry$BBox(-83.90, 41.92, -75.46, 45.81)
+region_ont_sud <- ee$Geometry$BBox(-83.90, 41.92, -75.46, 45.81) #Coordonnées d'un polygone recouvrant le sud de l'Ontario
 image_ont_sud_2018 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2018-05-01', '2018-08-31')$filterBounds(region_ont_sud)
 image_ont_sud_2019 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2019-05-01', '2019-08-31')$filterBounds(region_ont_sud)
 image_ont_sud_2020 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2020-05-01', '2020-08-31')$filterBounds(region_ont_sud)
@@ -143,23 +143,23 @@ image_ont_sud_2020_df$Path <- 1
 
 for (i in 1:length(image_ont_sud_2018$features))
 {
-  image_ont_sud_2018_df$Date[i] <- image_ont_sud_2018$features[i][[1]]$properties$DATE_ACQUIRED
-  image_ont_sud_2018_df$Row[i] <- image_ont_sud_2018$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_ont_sud_2018_df$Path[i] <- image_ont_sud_2018$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_ont_sud_2018_df$Date[i] <- image_ont_sud_2018$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_ont_sud_2018_df$Row[i] <- image_ont_sud_2018$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_ont_sud_2018_df$Path[i] <- image_ont_sud_2018$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_ont_sud_2019$features))
 {
-  image_ont_sud_2019_df$Date[i] <- image_ont_sud_2019$features[i][[1]]$properties$DATE_ACQUIRED
-  image_ont_sud_2019_df$Row[i] <- image_ont_sud_2019$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_ont_sud_2019_df$Path[i] <- image_ont_sud_2019$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_ont_sud_2019_df$Date[i] <- image_ont_sud_2019$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_ont_sud_2019_df$Row[i] <- image_ont_sud_2019$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_ont_sud_2019_df$Path[i] <- image_ont_sud_2019$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_ont_sud_2020$features))
 {
-  image_ont_sud_2020_df$Date[i] <- image_ont_sud_2020$features[i][[1]]$properties$DATE_ACQUIRED
-  image_ont_sud_2020_df$Row[i] <- image_ont_sud_2020$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_ont_sud_2020_df$Path[i] <- image_ont_sud_2020$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_ont_sud_2020_df$Date[i] <- image_ont_sud_2020$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_ont_sud_2020_df$Row[i] <- image_ont_sud_2020$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_ont_sud_2020_df$Path[i] <- image_ont_sud_2020$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 image_ont_sud_2018_df <- extraction_date(image_ont_sud_2018_df)
@@ -201,7 +201,7 @@ write.csv(Image_journee_chaude_ont_sud, "CHEMIN_DU_FICHIER_CONTENANT_LES_INFORMA
 
 #Ontario milieu
 ```{r eval=FALSE}
-region_ont_milieu <- ee$Geometry$BBox(-84.90, 46.00, -78.16, 48.9)
+region_ont_milieu <- ee$Geometry$BBox(-84.90, 46.00, -78.16, 48.9) #Coordonnées d'un polygone recouvrant le milieu de l'Ontario
 image_ont_milieu_2018 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2018-05-01', '2018-08-31')$filterBounds(region_ont_milieu)
 image_ont_milieu_2019 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2019-05-01', '2019-08-31')$filterBounds(region_ont_milieu)
 image_ont_milieu_2020 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2020-05-01', '2020-08-31')$filterBounds(region_ont_milieu)
@@ -226,23 +226,23 @@ image_ont_milieu_2020_df$Path <- 1
 
 for (i in 1:length(image_ont_milieu_2018$features))
 {
-  image_ont_milieu_2018_df$Date[i] <- image_ont_milieu_2018$features[i][[1]]$properties$DATE_ACQUIRED
-  image_ont_milieu_2018_df$Row[i] <- image_ont_milieu_2018$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_ont_milieu_2018_df$Path[i] <- image_ont_milieu_2018$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_ont_milieu_2018_df$Date[i] <- image_ont_milieu_2018$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_ont_milieu_2018_df$Row[i] <- image_ont_milieu_2018$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_ont_milieu_2018_df$Path[i] <- image_ont_milieu_2018$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_ont_milieu_2019$features))
 {
-  image_ont_milieu_2019_df$Date[i] <- image_ont_milieu_2019$features[i][[1]]$properties$DATE_ACQUIRED
-  image_ont_milieu_2019_df$Row[i] <- image_ont_milieu_2019$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_ont_milieu_2019_df$Path[i] <- image_ont_milieu_2019$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_ont_milieu_2019_df$Date[i] <- image_ont_milieu_2019$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_ont_milieu_2019_df$Row[i] <- image_ont_milieu_2019$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_ont_milieu_2019_df$Path[i] <- image_ont_milieu_2019$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_ont_milieu_2020$features))
 {
-  image_ont_milieu_2020_df$Date[i] <- image_ont_milieu_2020$features[i][[1]]$properties$DATE_ACQUIRED
-  image_ont_milieu_2020_df$Row[i] <- image_ont_milieu_2020$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_ont_milieu_2020_df$Path[i] <- image_ont_milieu_2020$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_ont_milieu_2020_df$Date[i] <- image_ont_milieu_2020$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_ont_milieu_2020_df$Row[i] <- image_ont_milieu_2020$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_ont_milieu_2020_df$Path[i] <- image_ont_milieu_2020$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 image_ont_milieu_2018_df <- extraction_date(image_ont_milieu_2018_df)
@@ -284,7 +284,7 @@ write.csv(Image_journee_chaude_ont_milieu, "CHEMIN_DU_FICHIER_CONTENANT_LES_INFO
 
 #Ontario ouest
 ```{r eval=FALSE}
-region_ont_ouest <- ee$Geometry$BBox(-95.26, 47.86, -88.29, 49.88)
+region_ont_ouest <- ee$Geometry$BBox(-95.26, 47.86, -88.29, 49.88) #Coordonnées d'un polygone recouvrant l'Ouest de l'Ontario
 image_ont_ouest_2018 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2018-05-01', '2018-08-31')$filterBounds(region_ont_ouest)
 image_ont_ouest_2019 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2019-05-01', '2019-08-31')$filterBounds(region_ont_ouest)
 image_ont_ouest_2020 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2020-05-01', '2020-08-31')$filterBounds(region_ont_ouest)
@@ -309,23 +309,23 @@ image_ont_ouest_2020_df$Path <- 1
 
 for (i in 1:length(image_ont_ouest_2018$features))
 {
-  image_ont_ouest_2018_df$Date[i] <- image_ont_ouest_2018$features[i][[1]]$properties$DATE_ACQUIRED
-  image_ont_ouest_2018_df$Row[i] <- image_ont_ouest_2018$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_ont_ouest_2018_df$Path[i] <- image_ont_ouest_2018$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_ont_ouest_2018_df$Date[i] <- image_ont_ouest_2018$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_ont_ouest_2018_df$Row[i] <- image_ont_ouest_2018$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_ont_ouest_2018_df$Path[i] <- image_ont_ouest_2018$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_ont_ouest_2019$features))
 {
-  image_ont_ouest_2019_df$Date[i] <- image_ont_ouest_2019$features[i][[1]]$properties$DATE_ACQUIRED
-  image_ont_ouest_2019_df$Row[i] <- image_ont_ouest_2019$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_ont_ouest_2019_df$Path[i] <- image_ont_ouest_2019$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_ont_ouest_2019_df$Date[i] <- image_ont_ouest_2019$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_ont_ouest_2019_df$Row[i] <- image_ont_ouest_2019$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_ont_ouest_2019_df$Path[i] <- image_ont_ouest_2019$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_ont_ouest_2020$features))
 {
-  image_ont_ouest_2020_df$Date[i] <- image_ont_ouest_2020$features[i][[1]]$properties$DATE_ACQUIRED
-  image_ont_ouest_2020_df$Row[i] <- image_ont_ouest_2020$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_ont_ouest_2020_df$Path[i] <- image_ont_ouest_2020$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_ont_ouest_2020_df$Date[i] <- image_ont_ouest_2020$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_ont_ouest_2020_df$Row[i] <- image_ont_ouest_2020$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_ont_ouest_2020_df$Path[i] <- image_ont_ouest_2020$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 image_ont_ouest_2018_df <- extraction_date(image_ont_ouest_2018_df)
@@ -367,8 +367,8 @@ write.csv(Image_journee_chaude_ont_ouest, "CHEMIN_DU_FICHIER_CONTENANT_LES_INFOR
 ```
 
 #Manitoba sud
-```{r eval=FALSE}
-region_manitoba_sud <- ee$Geometry$BBox(-101.41, 48.99, -96.09, 50.80)
+```{r eval=FALSE} 
+region_manitoba_sud <- ee$Geometry$BBox(-101.41, 48.99, -96.09, 50.80) #Coordonnées d'un polygone recouvrant le sud du Manitoba
 image_manitoba_sud_2018 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2018-05-01', '2018-08-31')$filterBounds(region_manitoba_sud)
 image_manitoba_sud_2019 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2019-05-01', '2019-08-31')$filterBounds(region_manitoba_sud)
 image_manitoba_sud_2020 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2020-05-01', '2020-08-31')$filterBounds(region_manitoba_sud)
@@ -393,23 +393,23 @@ image_manitoba_sud_2020_df$Path <- 1
 
 for (i in 1:length(image_manitoba_sud_2018$features))
 {
-  image_manitoba_sud_2018_df$Date[i] <- image_manitoba_sud_2018$features[i][[1]]$properties$DATE_ACQUIRED
-  image_manitoba_sud_2018_df$Row[i] <- image_manitoba_sud_2018$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_manitoba_sud_2018_df$Path[i] <- image_manitoba_sud_2018$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_manitoba_sud_2018_df$Date[i] <- image_manitoba_sud_2018$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_manitoba_sud_2018_df$Row[i] <- image_manitoba_sud_2018$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_manitoba_sud_2018_df$Path[i] <- image_manitoba_sud_2018$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_manitoba_sud_2019$features))
-{
-  image_manitoba_sud_2019_df$Date[i] <- image_manitoba_sud_2019$features[i][[1]]$properties$DATE_ACQUIRED
-  image_manitoba_sud_2019_df$Row[i] <- image_manitoba_sud_2019$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_manitoba_sud_2019_df$Path[i] <- image_manitoba_sud_2019$features[i][[1]]$properties$TARGET_WRS_PATH
+{ 
+  image_manitoba_sud_2019_df$Date[i] <- image_manitoba_sud_2019$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_manitoba_sud_2019_df$Row[i] <- image_manitoba_sud_2019$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_manitoba_sud_2019_df$Path[i] <- image_manitoba_sud_2019$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_manitoba_sud_2020$features))
 {
-  image_manitoba_sud_2020_df$Date[i] <- image_manitoba_sud_2020$features[i][[1]]$properties$DATE_ACQUIRED
-  image_manitoba_sud_2020_df$Row[i] <- image_manitoba_sud_2020$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_manitoba_sud_2020_df$Path[i] <- image_manitoba_sud_2020$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_manitoba_sud_2020_df$Date[i] <- image_manitoba_sud_2020$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_manitoba_sud_2020_df$Row[i] <- image_manitoba_sud_2020$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_manitoba_sud_2020_df$Path[i] <- image_manitoba_sud_2020$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 image_manitoba_sud_2018_df <- extraction_date(image_manitoba_sud_2018_df)
@@ -449,7 +449,7 @@ write.csv(Image_journee_chaude_manitoba_sud, "CHEMIN_DU_FICHIER_CONTENANT_LES_IN
 
 #Manitoba nord
 ```{r eval=FALSE}
-region_manitoba_nord <- ee$Geometry$BBox(-98.01, 55.67, -97.67, 55.86)
+region_manitoba_nord <- ee$Geometry$BBox(-98.01, 55.67, -97.67, 55.86) #Coordonnées d'un polygone recouvrant le nord du Manitoba
 image_manitoba_nord_2018 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2018-05-01', '2018-08-31')$filterBounds(region_manitoba_nord)
 image_manitoba_nord_2019 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2019-05-01', '2019-08-31')$filterBounds(region_manitoba_nord)
 image_manitoba_nord_2020 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2020-05-01', '2020-08-31')$filterBounds(region_manitoba_nord)
@@ -474,23 +474,23 @@ image_manitoba_nord_2020_df$Path <- 1
 
 for (i in 1:length(image_manitoba_nord_2018$features))
 {
-  image_manitoba_nord_2018_df$Date[i] <- image_manitoba_nord_2018$features[i][[1]]$properties$DATE_ACQUIRED
-  image_manitoba_nord_2018_df$Row[i] <- image_manitoba_nord_2018$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_manitoba_nord_2018_df$Path[i] <- image_manitoba_nord_2018$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_manitoba_nord_2018_df$Date[i] <- image_manitoba_nord_2018$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_manitoba_nord_2018_df$Row[i] <- image_manitoba_nord_2018$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_manitoba_nord_2018_df$Path[i] <- image_manitoba_nord_2018$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_manitoba_nord_2019$features))
 {
-  image_manitoba_nord_2019_df$Date[i] <- image_manitoba_nord_2019$features[i][[1]]$properties$DATE_ACQUIRED
-  image_manitoba_nord_2019_df$Row[i] <- image_manitoba_nord_2019$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_manitoba_nord_2019_df$Path[i] <- image_manitoba_nord_2019$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_manitoba_nord_2019_df$Date[i] <- image_manitoba_nord_2019$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_manitoba_nord_2019_df$Row[i] <- image_manitoba_nord_2019$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_manitoba_nord_2019_df$Path[i] <- image_manitoba_nord_2019$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_manitoba_nord_2020$features))
 {
-  image_manitoba_nord_2020_df$Date[i] <- image_manitoba_nord_2020$features[i][[1]]$properties$DATE_ACQUIRED
-  image_manitoba_nord_2020_df$Row[i] <- image_manitoba_nord_2020$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_manitoba_nord_2020_df$Path[i] <- image_manitoba_nord_2020$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_manitoba_nord_2020_df$Date[i] <- image_manitoba_nord_2020$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_manitoba_nord_2020_df$Row[i] <- image_manitoba_nord_2020$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_manitoba_nord_2020_df$Path[i] <- image_manitoba_nord_2020$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 image_manitoba_nord_2018_df <- extraction_date(image_manitoba_nord_2018_df)
@@ -531,8 +531,8 @@ write.csv(Image_journee_chaude_manitoba_nord, "CHEMIN_DU_FICHIER_CONTENANT_LES_I
 ```
 
 #Saskatchewan
-```{r eval=FALSE}
-region_sask <- ee$Geometry$BBox(-110.20, 48.94, -101.81, 53.74)
+```{r eval=FALSE} 
+region_sask <- ee$Geometry$BBox(-110.20, 48.94, -101.81, 53.74) #Coordonnées d'un polygone recouvrant la Saskatchewan
 image_sask_2018 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2018-05-01', '2018-08-31')$filterBounds(region_sask)
 image_sask_2019 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2019-05-01', '2019-08-31')$filterBounds(region_sask)
 image_sask_2020 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2020-05-01', '2020-08-31')$filterBounds(region_sask)
@@ -557,23 +557,23 @@ image_sask_2020_df$Path <- 1
 
 for (i in 1:length(image_sask_2018$features))
 {
-  image_sask_2018_df$Date[i] <- image_sask_2018$features[i][[1]]$properties$DATE_ACQUIRED
-  image_sask_2018_df$Row[i] <- image_sask_2018$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_sask_2018_df$Path[i] <- image_sask_2018$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_sask_2018_df$Date[i] <- image_sask_2018$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_sask_2018_df$Row[i] <- image_sask_2018$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_sask_2018_df$Path[i] <- image_sask_2018$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_sask_2019$features))
 {
-  image_sask_2019_df$Date[i] <- image_sask_2019$features[i][[1]]$properties$DATE_ACQUIRED
-  image_sask_2019_df$Row[i] <- image_sask_2019$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_sask_2019_df$Path[i] <- image_sask_2019$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_sask_2019_df$Date[i] <- image_sask_2019$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_sask_2019_df$Row[i] <- image_sask_2019$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_sask_2019_df$Path[i] <- image_sask_2019$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_sask_2020$features))
 {
-  image_sask_2020_df$Date[i] <- image_sask_2020$features[i][[1]]$properties$DATE_ACQUIRED
-  image_sask_2020_df$Row[i] <- image_sask_2020$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_sask_2020_df$Path[i] <- image_sask_2020$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_sask_2020_df$Date[i] <- image_sask_2020$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_sask_2020_df$Row[i] <- image_sask_2020$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_sask_2020_df$Path[i] <- image_sask_2020$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 image_sask_2018_df <- extraction_date(image_sask_2018_df)
@@ -616,7 +616,7 @@ write.csv(Image_journee_chaude_sask, "CHEMIN_DU_FICHIER_CONTENANT_LES_INFORMATIO
 
 #Alberta sud
 ```{r eval=FALSE}
-region_alberta_sud <- ee$Geometry$BBox(-117.99, 48.98, -109.99, 54.11)
+region_alberta_sud <- ee$Geometry$BBox(-117.99, 48.98, -109.99, 54.11) #Coordonnées d'un polygone recouvrant le sud de l'Alberta
 image_alberta_sud_2018 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2018-05-01', '2018-08-31')$filterBounds(region_alberta_sud)
 image_alberta_sud_2019 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2019-05-01', '2019-08-31')$filterBounds(region_alberta_sud)
 image_alberta_sud_2020 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2020-05-01', '2020-08-31')$filterBounds(region_alberta_sud)
@@ -641,24 +641,24 @@ image_alberta_sud_2020_df$Path <- 1
 
 for (i in 1:length(image_alberta_sud_2018$features))
 {
-  image_alberta_sud_2018_df$Date[i] <- image_alberta_sud_2018$features[i][[1]]$properties$DATE_ACQUIRED
-  image_alberta_sud_2018_df$Row[i] <- image_alberta_sud_2018$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_alberta_sud_2018_df$Path[i] <- image_alberta_sud_2018$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_alberta_sud_2018_df$Date[i] <- image_alberta_sud_2018$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_alberta_sud_2018_df$Row[i] <- image_alberta_sud_2018$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_alberta_sud_2018_df$Path[i] <- image_alberta_sud_2018$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_alberta_sud_2019$features))
 {
-  image_alberta_sud_2019_df$Date[i] <- image_alberta_sud_2019$features[i][[1]]$properties$DATE_ACQUIRED
-  image_alberta_sud_2019_df$Row[i] <- image_alberta_sud_2019$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_alberta_sud_2019_df$Path[i] <- image_alberta_sud_2019$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_alberta_sud_2019_df$Date[i] <- image_alberta_sud_2019$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_alberta_sud_2019_df$Row[i] <- image_alberta_sud_2019$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_alberta_sud_2019_df$Path[i] <- image_alberta_sud_2019$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_alberta_sud_2020$features))
 {
-  image_alberta_sud_2020_df$Date[i] <- image_alberta_sud_2020$features[i][[1]]$properties$DATE_ACQUIRED
-  image_alberta_sud_2020_df$Row[i] <- image_alberta_sud_2020$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_alberta_sud_2020_df$Path[i] <- image_alberta_sud_2020$features[i][[1]]$properties$TARGET_WRS_PATH
-}
+  image_alberta_sud_2020_df$Date[i] <- image_alberta_sud_2020$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_alberta_sud_2020_df$Row[i] <- image_alberta_sud_2020$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_alberta_sud_2020_df$Path[i] <- image_alberta_sud_2020$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
+} 
 
 image_alberta_sud_2018_df <- extraction_date(image_alberta_sud_2018_df)
 image_alberta_sud_2019_df <- extraction_date(image_alberta_sud_2019_df)
@@ -699,7 +699,7 @@ write.csv(Image_journee_chaude_alberta_sud, "CHEMIN_DU_FICHIER_CONTENANT_LES_INF
 
 #Alberta nord
 ```{r eval=FALSE}
-region_alberta_nord <- ee$Geometry$BBox(-114.72, 55.43, -108.94, 60.14)
+region_alberta_nord <- ee$Geometry$BBox(-114.72, 55.43, -108.94, 60.14) #Coordonnées d'un polygone recouvrant le nord de l'Alberta
 image_alberta_nord_2018 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2018-05-01', '2018-08-31')$filterBounds(region_alberta_nord)
 image_alberta_nord_2019 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2019-05-01', '2019-08-31')$filterBounds(region_alberta_nord)
 image_alberta_nord_2020 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2020-05-01', '2020-08-31')$filterBounds(region_alberta_nord)
@@ -724,23 +724,23 @@ image_alberta_nord_2020_df$Path <- 1
 
 for (i in 1:length(image_alberta_nord_2018$features))
 {
-  image_alberta_nord_2018_df$Date[i] <- image_alberta_nord_2018$features[i][[1]]$properties$DATE_ACQUIRED
-  image_alberta_nord_2018_df$Row[i] <- image_alberta_nord_2018$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_alberta_nord_2018_df$Path[i] <- image_alberta_nord_2018$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_alberta_nord_2018_df$Date[i] <- image_alberta_nord_2018$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_alberta_nord_2018_df$Row[i] <- image_alberta_nord_2018$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_alberta_nord_2018_df$Path[i] <- image_alberta_nord_2018$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_alberta_nord_2019$features))
 {
-  image_alberta_nord_2019_df$Date[i] <- image_alberta_nord_2019$features[i][[1]]$properties$DATE_ACQUIRED
-  image_alberta_nord_2019_df$Row[i] <- image_alberta_nord_2019$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_alberta_nord_2019_df$Path[i] <- image_alberta_nord_2019$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_alberta_nord_2019_df$Date[i] <- image_alberta_nord_2019$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_alberta_nord_2019_df$Row[i] <- image_alberta_nord_2019$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_alberta_nord_2019_df$Path[i] <- image_alberta_nord_2019$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_alberta_nord_2020$features))
 {
-  image_alberta_nord_2020_df$Date[i] <- image_alberta_nord_2020$features[i][[1]]$properties$DATE_ACQUIRED
-  image_alberta_nord_2020_df$Row[i] <- image_alberta_nord_2020$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_alberta_nord_2020_df$Path[i] <- image_alberta_nord_2020$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_alberta_nord_2020_df$Date[i] <- image_alberta_nord_2020$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_alberta_nord_2020_df$Row[i] <- image_alberta_nord_2020$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_alberta_nord_2020_df$Path[i] <- image_alberta_nord_2020$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 image_alberta_nord_2018_df <- extraction_date(image_alberta_nord_2018_df)
@@ -782,7 +782,7 @@ write.csv(Image_journee_chaude_alberta_nord, "CHEMIN_DU_FICHIER_CONTENANT_LES_IN
 
 #Colombie-Britannique sud
 ```{r eval=FALSE}
-region_bc_sud <- ee$Geometry$BBox(-127.28, 48.34, -112.61, 52.57)
+region_bc_sud <- ee$Geometry$BBox(-127.28, 48.34, -112.61, 52.57) #Coordonnées d'un polygone recouvrant le sud de la Colombrie-Britannique
 image_bc_sud_2018 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2018-05-01', '2018-08-31')$filterBounds(region_bc_sud)
 image_bc_sud_2019 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2019-05-01', '2019-08-31')$filterBounds(region_bc_sud)
 image_bc_sud_2020 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2020-05-01', '2020-08-31')$filterBounds(region_bc_sud)
@@ -806,24 +806,24 @@ image_bc_sud_2020_df$Row <- 1
 image_bc_sud_2020_df$Path <- 1
 
 for (i in 1:length(image_bc_sud_2018$features))
-{
-  image_bc_sud_2018_df$Date[i] <- image_bc_sud_2018$features[i][[1]]$properties$DATE_ACQUIRED
-  image_bc_sud_2018_df$Row[i] <- image_bc_sud_2018$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_bc_sud_2018_df$Path[i] <- image_bc_sud_2018$features[i][[1]]$properties$TARGET_WRS_PATH
+{ 
+  image_bc_sud_2018_df$Date[i] <- image_bc_sud_2018$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_bc_sud_2018_df$Row[i] <- image_bc_sud_2018$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_bc_sud_2018_df$Path[i] <- image_bc_sud_2018$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_bc_sud_2019$features))
 {
-  image_bc_sud_2019_df$Date[i] <- image_bc_sud_2019$features[i][[1]]$properties$DATE_ACQUIRED
-  image_bc_sud_2019_df$Row[i] <- image_bc_sud_2019$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_bc_sud_2019_df$Path[i] <- image_bc_sud_2019$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_bc_sud_2019_df$Date[i] <- image_bc_sud_2019$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_bc_sud_2019_df$Row[i] <- image_bc_sud_2019$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_bc_sud_2019_df$Path[i] <- image_bc_sud_2019$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_bc_sud_2020$features))
-{
-  image_bc_sud_2020_df$Date[i] <- image_bc_sud_2020$features[i][[1]]$properties$DATE_ACQUIRED
-  image_bc_sud_2020_df$Row[i] <- image_bc_sud_2020$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_bc_sud_2020_df$Path[i] <- image_bc_sud_2020$features[i][[1]]$properties$TARGET_WRS_PATH
+{ 
+  image_bc_sud_2020_df$Date[i] <- image_bc_sud_2020$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_bc_sud_2020_df$Row[i] <- image_bc_sud_2020$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_bc_sud_2020_df$Path[i] <- image_bc_sud_2020$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 image_bc_sud_2018_df <- extraction_date(image_bc_sud_2018_df)
@@ -865,7 +865,7 @@ write.csv(Image_journee_chaude_bc_sud, "CHEMIN_DU_FICHIER_CONTENANT_LES_INFORMAT
 
 #Colombie-Britannique Nord-Est
 ```{r eval=FALSE}
-region_bc_ne <- ee$Geometry$BBox(-125.31, 51.27, -119.97, 56.47)
+region_bc_ne <- ee$Geometry$BBox(-125.31, 51.27, -119.97, 56.47) #Coordonnées d'un polygone recouvrant le nord-est de la Colombie-Britannique
 image_bc_ne_2018 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2018-05-01', '2018-08-31')$filterBounds(region_bc_ne)
 image_bc_ne_2019 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2019-05-01', '2019-08-31')$filterBounds(region_bc_ne)
 image_bc_ne_2020 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2020-05-01', '2020-08-31')$filterBounds(region_bc_ne)
@@ -890,24 +890,24 @@ image_bc_ne_2020_df$Path <- 1
 
 for (i in 1:length(image_bc_ne_2018$features))
 {
-  image_bc_ne_2018_df$Date[i] <- image_bc_ne_2018$features[i][[1]]$properties$DATE_ACQUIRED
-  image_bc_ne_2018_df$Row[i] <- image_bc_ne_2018$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_bc_ne_2018_df$Path[i] <- image_bc_ne_2018$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_bc_ne_2018_df$Date[i] <- image_bc_ne_2018$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_bc_ne_2018_df$Row[i] <- image_bc_ne_2018$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_bc_ne_2018_df$Path[i] <- image_bc_ne_2018$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_bc_ne_2019$features))
 {
-  image_bc_ne_2019_df$Date[i] <- image_bc_ne_2019$features[i][[1]]$properties$DATE_ACQUIRED
-  image_bc_ne_2019_df$Row[i] <- image_bc_ne_2019$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_bc_ne_2019_df$Path[i] <- image_bc_ne_2019$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_bc_ne_2019_df$Date[i] <- image_bc_ne_2019$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_bc_ne_2019_df$Row[i] <- image_bc_ne_2019$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_bc_ne_2019_df$Path[i] <- image_bc_ne_2019$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_bc_ne_2020$features))
 {
-  image_bc_ne_2020_df$Date[i] <- image_bc_ne_2020$features[i][[1]]$properties$DATE_ACQUIRED
-  image_bc_ne_2020_df$Row[i] <- image_bc_ne_2020$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_bc_ne_2020_df$Path[i] <- image_bc_ne_2020$features[i][[1]]$properties$TARGET_WRS_PATH
-}
+  image_bc_ne_2020_df$Date[i] <- image_bc_ne_2020$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_bc_ne_2020_df$Row[i] <- image_bc_ne_2020$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_bc_ne_2020_df$Path[i] <- image_bc_ne_2020$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
+} 
 
 image_bc_ne_2018_df <- extraction_date(image_bc_ne_2018_df)
 image_bc_ne_2019_df <- extraction_date(image_bc_ne_2019_df)
@@ -948,7 +948,7 @@ write.csv(Image_journee_chaude_bc_ne, "CHEMIN_DU_FICHIER_CONTENANT_LES_INFORMATI
 
 #Nouveau-Brunswick
 ```{r eval=FALSE}
-region_NB <- ee$Geometry$BBox(-69.07, 44.65, -63.66, 48.17)
+region_NB <- ee$Geometry$BBox(-69.07, 44.65, -63.66, 48.17) #Coordonnées d'un polygone recouvrant le Nouveau-Brunswick
 image_NB_2018 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2018-05-01', '2018-08-31')$filterBounds(region_NB)
 image_NB_2019 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2019-05-01', '2019-08-31')$filterBounds(region_NB)
 image_NB_2020 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2020-05-01', '2020-08-31')$filterBounds(region_NB)
@@ -973,23 +973,23 @@ image_NB_2020_df$Path <- 1
 
 for (i in 1:length(image_NB_2018$features))
 {
-  image_NB_2018_df$Date[i] <- image_NB_2018$features[i][[1]]$properties$DATE_ACQUIRED
-  image_NB_2018_df$Row[i] <- image_NB_2018$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_NB_2018_df$Path[i] <- image_NB_2018$features[i][[1]]$properties$TARGET_WRS_PATH
-}
+  image_NB_2018_df$Date[i] <- image_NB_2018$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_NB_2018_df$Row[i] <- image_NB_2018$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_NB_2018_df$Path[i] <- image_NB_2018$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
+} 
 
 for (i in 1:length(image_NB_2019$features))
-{
-  image_NB_2019_df$Date[i] <- image_NB_2019$features[i][[1]]$properties$DATE_ACQUIRED
-  image_NB_2019_df$Row[i] <- image_NB_2019$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_NB_2019_df$Path[i] <- image_NB_2019$features[i][[1]]$properties$TARGET_WRS_PATH
+{ 
+  image_NB_2019_df$Date[i] <- image_NB_2019$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_NB_2019_df$Row[i] <- image_NB_2019$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_NB_2019_df$Path[i] <- image_NB_2019$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_NB_2020$features))
 {
-  image_NB_2020_df$Date[i] <- image_NB_2020$features[i][[1]]$properties$DATE_ACQUIRED
-  image_NB_2020_df$Row[i] <- image_NB_2020$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_NB_2020_df$Path[i] <- image_NB_2020$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_NB_2020_df$Date[i] <- image_NB_2020$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_NB_2020_df$Row[i] <- image_NB_2020$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_NB_2020_df$Path[i] <- image_NB_2020$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 image_NB_2018_df <- extraction_date(image_NB_2018_df)
@@ -1031,7 +1031,7 @@ write.csv(Image_journee_chaude_NB, "CHEMIN_DU_FICHIER_CONTENANT_LES_INFORMATIONS
 
 # Nouvelle-Écosse
 ```{r eval=FALSE}
-region_NS <- ee$Geometry$BBox(-66.66, 43.69, -58.89, 46.48)
+region_NS <- ee$Geometry$BBox(-66.66, 43.69, -58.89, 46.48) #Coordonnées d'un polygone recouvrant la Nouvelle-Écosse
 image_NS_2018 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2018-05-01', '2018-08-31')$filterBounds(region_NS)
 image_NS_2019 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2019-05-01', '2019-08-31')$filterBounds(region_NS)
 image_NS_2020 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2020-05-01', '2020-08-31')$filterBounds(region_NS)
@@ -1056,23 +1056,23 @@ image_NS_2020_df$Path <- 1
 
 for (i in 1:length(image_NS_2018$features))
 {
-  image_NS_2018_df$Date[i] <- image_NS_2018$features[i][[1]]$properties$DATE_ACQUIRED
-  image_NS_2018_df$Row[i] <- image_NS_2018$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_NS_2018_df$Path[i] <- image_NS_2018$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_NS_2018_df$Date[i] <- image_NS_2018$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_NS_2018_df$Row[i] <- image_NS_2018$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_NS_2018_df$Path[i] <- image_NS_2018$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_NS_2019$features))
 {
-  image_NS_2019_df$Date[i] <- image_NS_2019$features[i][[1]]$properties$DATE_ACQUIRED
-  image_NS_2019_df$Row[i] <- image_NS_2019$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_NS_2019_df$Path[i] <- image_NS_2019$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_NS_2019_df$Date[i] <- image_NS_2019$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_NS_2019_df$Row[i] <- image_NS_2019$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_NS_2019_df$Path[i] <- image_NS_2019$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_NS_2020$features))
 {
-  image_NS_2020_df$Date[i] <- image_NS_2020$features[i][[1]]$properties$DATE_ACQUIRED
-  image_NS_2020_df$Row[i] <- image_NS_2020$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_NS_2020_df$Path[i] <- image_NS_2020$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_NS_2020_df$Date[i] <- image_NS_2020$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_NS_2020_df$Row[i] <- image_NS_2020$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_NS_2020_df$Path[i] <- image_NS_2020$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 image_NS_2018_df <- extraction_date(image_NS_2018_df)
@@ -1114,7 +1114,7 @@ write.csv(Image_journee_chaude_NS, "CHEMIN_DU_FICHIER_CONTENANT_LES_INFORMATIONS
 
 #Île-du-Prince-Édouard
 ```{r eval=FALSE}
-region_PEI <- ee$Geometry$BBox(-64.94, 45.44, -61.15, 47.04)
+region_PEI <- ee$Geometry$BBox(-64.94, 45.44, -61.15, 47.04) #Coordonnées d'un polygone recouvrant l'Île-du-Prince-Édouard
 image_PEI_2018 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2018-05-01', '2018-08-31')$filterBounds(region_PEI)
 image_PEI_2019 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2019-05-01', '2019-08-31')$filterBounds(region_PEI)
 image_PEI_2020 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2020-05-01', '2020-08-31')$filterBounds(region_PEI)
@@ -1139,23 +1139,23 @@ image_PEI_2020_df$Path <- 1
 
 for (i in 1:length(image_PEI_2018$features))
 {
-  image_PEI_2018_df$Date[i] <- image_PEI_2018$features[i][[1]]$properties$DATE_ACQUIRED
-  image_PEI_2018_df$Row[i] <- image_PEI_2018$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_PEI_2018_df$Path[i] <- image_PEI_2018$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_PEI_2018_df$Date[i] <- image_PEI_2018$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_PEI_2018_df$Row[i] <- image_PEI_2018$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_PEI_2018_df$Path[i] <- image_PEI_2018$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_PEI_2019$features))
 {
-  image_PEI_2019_df$Date[i] <- image_PEI_2019$features[i][[1]]$properties$DATE_ACQUIRED
-  image_PEI_2019_df$Row[i] <- image_PEI_2019$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_PEI_2019_df$Path[i] <- image_PEI_2019$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_PEI_2019_df$Date[i] <- image_PEI_2019$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_PEI_2019_df$Row[i] <- image_PEI_2019$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_PEI_2019_df$Path[i] <- image_PEI_2019$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_PEI_2020$features))
 {
-  image_PEI_2020_df$Date[i] <- image_PEI_2020$features[i][[1]]$properties$DATE_ACQUIRED
-  image_PEI_2020_df$Row[i] <- image_PEI_2020$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_PEI_2020_df$Path[i] <- image_PEI_2020$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_PEI_2020_df$Date[i] <- image_PEI_2020$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_PEI_2020_df$Row[i] <- image_PEI_2020$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_PEI_2020_df$Path[i] <- image_PEI_2020$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 image_PEI_2018_df <- extraction_date(image_PEI_2018_df)
@@ -1198,7 +1198,7 @@ write.csv(Image_journee_chaude_PEI, "CHEMIN_DU_FICHIER_CONTENANT_LES_INFORMATION
 #Colombie-Britannique est
 ```{r eval=FALSE}
 ### BC_est
-region_BC_est <- ee$Geometry$BBox(-131.31, 53.24, -127.20, 55.19)
+region_BC_est <- ee$Geometry$BBox(-131.31, 53.24, -127.20, 55.19) #Coordonnées d'un polygone recouvrant l'est de la Colombie-Britannique
 image_BC_est_2018 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2018-05-01', '2018-08-31')$filterBounds(region_BC_est)
 image_BC_est_2019 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2019-05-01', '2019-08-31')$filterBounds(region_BC_est)
 image_BC_est_2020 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2020-05-01', '2020-08-31')$filterBounds(region_BC_est)
@@ -1223,23 +1223,23 @@ image_BC_est_2020_df$Path <- 1
 
 for (i in 1:length(image_BC_est_2018$features))
 {
-  image_BC_est_2018_df$Date[i] <- image_BC_est_2018$features[i][[1]]$properties$DATE_ACQUIRED
-  image_BC_est_2018_df$Row[i] <- image_BC_est_2018$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_BC_est_2018_df$Path[i] <- image_BC_est_2018$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_BC_est_2018_df$Date[i] <- image_BC_est_2018$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_BC_est_2018_df$Row[i] <- image_BC_est_2018$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_BC_est_2018_df$Path[i] <- image_BC_est_2018$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_BC_est_2019$features))
 {
-  image_BC_est_2019_df$Date[i] <- image_BC_est_2019$features[i][[1]]$properties$DATE_ACQUIRED
-  image_BC_est_2019_df$Row[i] <- image_BC_est_2019$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_BC_est_2019_df$Path[i] <- image_BC_est_2019$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_BC_est_2019_df$Date[i] <- image_BC_est_2019$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_BC_est_2019_df$Row[i] <- image_BC_est_2019$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_BC_est_2019_df$Path[i] <- image_BC_est_2019$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_BC_est_2020$features))
 {
-  image_BC_est_2020_df$Date[i] <- image_BC_est_2020$features[i][[1]]$properties$DATE_ACQUIRED
-  image_BC_est_2020_df$Row[i] <- image_BC_est_2020$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_BC_est_2020_df$Path[i] <- image_BC_est_2020$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_BC_est_2020_df$Date[i] <- image_BC_est_2020$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_BC_est_2020_df$Row[i] <- image_BC_est_2020$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_BC_est_2020_df$Path[i] <- image_BC_est_2020$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 image_BC_est_2018_df <- extraction_date(image_BC_est_2018_df)
@@ -1281,7 +1281,7 @@ write.csv(Image_journee_chaude_BC_est, "CHEMIN_DU_FICHIER_CONTENANT_LES_INFORMAT
 
 #Yukon
 ```{r eval=FALSE}
-region_TNO_ouest <- ee$Geometry$BBox(-135.76, 59.31, -133.92, 61.72)
+region_TNO_ouest <- ee$Geometry$BBox(-135.76, 59.31, -133.92, 61.72)  #Coordonnées d'un polygone recouvrant le Yukon
 image_TNO_ouest_2018 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2018-05-01', '2018-08-31')$filterBounds(region_TNO_ouest)
 image_TNO_ouest_2019 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2019-05-01', '2019-08-31')$filterBounds(region_TNO_ouest)
 image_TNO_ouest_2020 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2020-05-01', '2020-08-31')$filterBounds(region_TNO_ouest)
@@ -1306,23 +1306,23 @@ image_TNO_ouest_2020_df$Path <- 1
 
 for (i in 1:length(image_TNO_ouest_2018$features))
 {
-  image_TNO_ouest_2018_df$Date[i] <- image_TNO_ouest_2018$features[i][[1]]$properties$DATE_ACQUIRED
-  image_TNO_ouest_2018_df$Row[i] <- image_TNO_ouest_2018$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_TNO_ouest_2018_df$Path[i] <- image_TNO_ouest_2018$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_TNO_ouest_2018_df$Date[i] <- image_TNO_ouest_2018$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_TNO_ouest_2018_df$Row[i] <- image_TNO_ouest_2018$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_TNO_ouest_2018_df$Path[i] <- image_TNO_ouest_2018$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_TNO_ouest_2019$features))
 {
-  image_TNO_ouest_2019_df$Date[i] <- image_TNO_ouest_2019$features[i][[1]]$properties$DATE_ACQUIRED
-  image_TNO_ouest_2019_df$Row[i] <- image_TNO_ouest_2019$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_TNO_ouest_2019_df$Path[i] <- image_TNO_ouest_2019$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_TNO_ouest_2019_df$Date[i] <- image_TNO_ouest_2019$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_TNO_ouest_2019_df$Row[i] <- image_TNO_ouest_2019$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_TNO_ouest_2019_df$Path[i] <- image_TNO_ouest_2019$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_TNO_ouest_2020$features))
 {
-  image_TNO_ouest_2020_df$Date[i] <- image_TNO_ouest_2020$features[i][[1]]$properties$DATE_ACQUIRED
-  image_TNO_ouest_2020_df$Row[i] <- image_TNO_ouest_2020$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_TNO_ouest_2020_df$Path[i] <- image_TNO_ouest_2020$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_TNO_ouest_2020_df$Date[i] <- image_TNO_ouest_2020$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_TNO_ouest_2020_df$Row[i] <- image_TNO_ouest_2020$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_TNO_ouest_2020_df$Path[i] <- image_TNO_ouest_2020$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 image_TNO_ouest_2018_df <- extraction_date(image_TNO_ouest_2018_df)
@@ -1364,7 +1364,7 @@ write.csv(Image_journee_chaude_TNO_ouest, "CHEMIN_DU_FICHIER_CONTENANT_LES_INFOR
 
 #Territoire du Nord-Ouest
 ```{r eval=FALSE}
-region_TNO_est <- ee$Geometry$BBox(-114.67, 62.29, -114.06, 62.57)
+region_TNO_est <- ee$Geometry$BBox(-114.67, 62.29, -114.06, 62.57)  #Coordonnées d'un polygone recouvrant le Territoire-du-Nord-Ouest
 image_TNO_est_2018 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2018-05-01', '2018-08-31')$filterBounds(region_TNO_est)
 image_TNO_est_2019 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2019-05-01', '2019-08-31')$filterBounds(region_TNO_est)
 image_TNO_est_2020 <- ee$ImageCollection("LANDSAT/LC08/C02/T1")$filterDate('2020-05-01', '2020-08-31')$filterBounds(region_TNO_est)
@@ -1389,24 +1389,24 @@ image_TNO_est_2020_df$Path <- 1
 
 for (i in 1:length(image_TNO_est_2018$features))
 {
-  image_TNO_est_2018_df$Date[i] <- image_TNO_est_2018$features[i][[1]]$properties$DATE_ACQUIRED
-  image_TNO_est_2018_df$Row[i] <- image_TNO_est_2018$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_TNO_est_2018_df$Path[i] <- image_TNO_est_2018$features[i][[1]]$properties$TARGET_WRS_PATH
+  image_TNO_est_2018_df$Date[i] <- image_TNO_est_2018$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_TNO_est_2018_df$Row[i] <- image_TNO_est_2018$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_TNO_est_2018_df$Path[i] <- image_TNO_est_2018$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_TNO_est_2019$features))
-{
-  image_TNO_est_2019_df$Date[i] <- image_TNO_est_2019$features[i][[1]]$properties$DATE_ACQUIRED
-  image_TNO_est_2019_df$Row[i] <- image_TNO_est_2019$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_TNO_est_2019_df$Path[i] <- image_TNO_est_2019$features[i][[1]]$properties$TARGET_WRS_PATH
+{ 
+  image_TNO_est_2019_df$Date[i] <- image_TNO_est_2019$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_TNO_est_2019_df$Row[i] <- image_TNO_est_2019$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_TNO_est_2019_df$Path[i] <- image_TNO_est_2019$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
 }
 
 for (i in 1:length(image_TNO_est_2020$features))
 {
-  image_TNO_est_2020_df$Date[i] <- image_TNO_est_2020$features[i][[1]]$properties$DATE_ACQUIRED
-  image_TNO_est_2020_df$Row[i] <- image_TNO_est_2020$features[i][[1]]$properties$TARGET_WRS_ROW
-  image_TNO_est_2020_df$Path[i] <- image_TNO_est_2020$features[i][[1]]$properties$TARGET_WRS_PATH
-}
+  image_TNO_est_2020_df$Date[i] <- image_TNO_est_2020$features[i][[1]]$properties$DATE_ACQUIRED #Exporte la date
+  image_TNO_est_2020_df$Row[i] <- image_TNO_est_2020$features[i][[1]]$properties$TARGET_WRS_ROW #Exporte la ligne
+  image_TNO_est_2020_df$Path[i] <- image_TNO_est_2020$features[i][[1]]$properties$TARGET_WRS_PATH #Exporte la colonne
+} 
 
 image_TNO_est_2018_df <- extraction_date(image_TNO_est_2018_df)
 image_TNO_est_2019_df <- extraction_date(image_TNO_est_2019_df)
