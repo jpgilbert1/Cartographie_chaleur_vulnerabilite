@@ -113,7 +113,7 @@ for(ii in 1:nrow(shp_RMR))
             rclmat <- matrix(pred[,c(2,7)], ncol=2 ) 
             pred_matrix <- as.matrix(pred[,c(2,7)])
   
-            pred_2 <- raster::reclassify(raster_isa_crop_mask,pred_matrix) #la matrice est transformer en raster
+            pred_2 <- raster::reclassify(raster_isa_crop_mask,pred_matrix) #la matrice est transformée en raster
             pred_2 [pred_2 < 0 ] <- NA
             pred_2 [pred_2  > 50] <- NA
             plot(pred_2)
