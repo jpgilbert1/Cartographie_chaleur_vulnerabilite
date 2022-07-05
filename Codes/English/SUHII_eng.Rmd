@@ -41,7 +41,7 @@ rm(shp)
 for(ii in 1:nrow(shp_RMR))
 {
   raster_isa_crop <-crop(raster_isa,extent(shp_RMR[ii,] ))
-  raster_isa_crop_mask <- mask(raster_isa_crop, shp_RMR[ii,] )
+  raster_isa_crop_mask <- mask(raster_isa_crop, shp_RMR[ii,] ) #impervious surface area according to the CMA shapefile
   rm(raster_isa_crop)
   raster_isa_crop_mask[raster_isa_crop_mask < 0 ] <- NA
   raster_isa_crop_mask[raster_isa_crop_mask > 100 ] <- NA
@@ -58,26 +58,26 @@ for(ii in 1:nrow(shp_RMR))
         lst[lst == 0] <- NA
       }
       rr_lst <-crop(lst,extent(shp_RMR[ii,] ))
-      rr_lst <- mask(rr_lst, shp_RMR[ii,] )
+      rr_lst <- mask(rr_lst, shp_RMR[ii,] ) #Land surface temperature according to the CMA shapefile
       ex <- extent(raster_isa_crop_mask)
       rr_lst <- crop(rr_lst, ex)
       rm(lst, ex)
         
       isa <- crop(raster_isa_crop_mask, extent(rr_lst))
-      r1 <- resample(isa, rr_lst)
+      r1 <- resample(isa, rr_lst) #To ensure that the extent of all raster files overlap smoothly
       
       isa <- raster(vals=values(r1),ext=extent(rr_lst),crs=crs(rr_lst),
                         nrows=dim(rr_lst)[1],ncols=dim(rr_lst)[2])
       
       rr_NDVI <- crop(NDVI, extent(rr_lst))
       rr_NDVI <- raster(vals=values(rr_NDVI),ext=extent(rr_lst),crs=crs(rr_lst),
-                        nrows=dim(rr_lst)[1],ncols=dim(rr_lst)[2])
+                        nrows=dim(rr_lst)[1],ncols=dim(rr_lst)[2]) #NDVI soil delineation according to the CMA shapefil
       
       rr_NDBI <- crop(NDBI, extent(rr_lst))
       rr_NDBI <- raster(vals=values(rr_NDBI),ext=extent(rr_lst),crs=crs(rr_lst),
-                        nrows=dim(rr_lst)[1],ncols=dim(rr_lst)[2])
+                        nrows=dim(rr_lst)[1],ncols=dim(rr_lst)[2]) #NDBI soil delineation according to the CMA shapefil
       
-      stack_image <- stack(isa,rr_NDVI, rr_NDBI, rr_lst)
+      stack_image <- stack(isa,rr_NDVI, rr_NDBI, rr_lst) #combines raster images into a single raster
       rm(isa, rr_NDVI, rr_NDBI)
       
       v <- data.frame(na.omit(values(stack_image)))
@@ -85,22 +85,22 @@ for(ii in 1:nrow(shp_RMR))
       if(nrow(v) != 0)
       {
           v$ISA <- round(v$ISA)
-          mean_lst <- aggregate(v, list(v$ISA), mean)
+          mean_lst <- aggregate(v, list(v$ISA), mean) # averages soil temperature, NDVI and NDBI by percent imperviousness 
           if(nrow(mean_lst) > 4)
           {
-          g <- gam(Mean_LST ~ s(ISA) +NDVI+NDBI,data=mean_lst)
+          g <- gam(Mean_LST ~ s(ISA) +NDVI+NDBI,data=mean_lst) #Apply GAM
           if(summary(g)$r.sq > r_carre)
           {
             r_carre <- summary(g)$r.sq
             print(summary(g)$r.sq)
             
             #prediction
-            pred <- predict(g, mean_lst)
+            pred <- predict(g, mean_lst) #Apply the GAM to extract the slope
             pred <- data.frame(pred)
             pred$SUHII <- NA
             pred <- cbind(mean_lst, pred)
   
-            for(hh in 1:nrow(data.frame(pred)))
+            for(hh in 1:nrow(data.frame(pred))) #To extract the intensity, we want the difference between the temperature at percentage x + 1 and percentage x
             {
              if(hh == 1)
               {
@@ -113,7 +113,7 @@ for(ii in 1:nrow(shp_RMR))
             rclmat <- matrix(pred[,c(2,7)], ncol=2 )
             pred_matrix <- as.matrix(pred[,c(2,7)])
   
-            pred_2 <- raster::reclassify(raster_isa_crop_mask,pred_matrix)
+            pred_2 <- raster::reclassify(raster_isa_crop_mask,pred_matrix) #the matrix is transformed into a raster
             pred_2 [pred_2 < 0 ] <- NA
             pred_2 [pred_2  > 50] <- NA
             plot(pred_2)
@@ -121,7 +121,7 @@ for(ii in 1:nrow(shp_RMR))
             nom_fichier_raster <- paste0("PATH\\SUHII_",shp_RMR@data$RMRIDU[ii]) 
             nom_fichier_raster <- paste0(nom_fichier_raster,"_") 
             nom_fichier_raster <- paste0(nom_fichier_raster, filelist_court_lst[i])
-            writeRaster(pred_2 , nom_fichier_raster, 'GTiff', overwrite=TRUE)
+            writeRaster(pred_2 , nom_fichier_raster, 'GTiff', overwrite=TRUE) #Export raster
             
              nom_fichier <- paste0("PATH\\R2_YEAR\\SUHII_", shp_RMR@data$RMRIDU[ii])
              
@@ -163,7 +163,7 @@ names(r2)[names(r2) == "X2019"] <- "2019"
 names(r2)[names(r2) == "X2020"] <- "2020"
 
 r2[is.na(r2)] <- 0
-r2$Max <- pmax(r2$`2018`,r2$`2019`,r2$`2020`)
+r2$Max <- pmax(r2$`2018`,r2$`2019`,r2$`2020`) #search the maximum value between the 3 columns per line
 AD_shp <- sf::st_read("PATH\\AD_RMR_SpatialJoin.shp") 
 
  for (i in 1:nrow(r2))
@@ -178,12 +178,12 @@ AD_shp <- sf::st_read("PATH\\AD_RMR_SpatialJoin.shp")
       suhii_file_path <- paste0(suhii_file_path, r2$X[i])
       suhii_file_path <- paste0(suhii_file_path, ".tif")
       suhii_raster <- raster(suhii_file_path)
-      suhii_point <- rasterToPoints(suhii_raster, spatial = TRUE)
+      suhii_point <- rasterToPoints(suhii_raster, spatial = TRUE)  #transforms the raster into a point shapefile
       
       AD_rmr_shp<- AD_shp[which(AD_shp$RMRIDU==r2$X_char[i]),]
       AD_rmr_shp_sp <- as(AD_rmr_shp, "Spatial")
       suhii_point_crs <- spTransform(suhii_point, crs(AD_rmr_shp_sp))
-      pts.poly <- sp::over(AD_rmr_shp_sp,suhii_point_crs,fn=mean)
+      pts.poly <- sp::over(AD_rmr_shp_sp,suhii_point_crs,fn=mean)  #Joining point values and scattering areas, averaging.
       pts.poly2 <- cbind(as.data.frame(as(AD_rmr_shp, "Spatial")@data$ADIDU), pts.poly)
       names(pts.poly2)[names(pts.poly2) == "as(AD_rmr_shp, \"Spatial\")@data$ADIDU"] <- "ADIDU"
       AD_rmr_shp_sp2 <- merge(AD_rmr_shp_sp, pts.poly2)
