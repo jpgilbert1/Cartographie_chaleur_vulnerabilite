@@ -35,17 +35,18 @@ centroid_AD <- st_read("PATH_OF_THE_FILE\\ID_RMR_2_MeanCenter1_deplacer.shp")
 coping_capacity <- st_read("COPING_CAPACITY_FILE")
 centroid_AD$variable<- NA
 
+#Despite the fact that we increase the processing capacity with our own server, a matrix with the combined data is too big, hence the reading by 500
 k <- 1
 kk <- 500
 for (k in seq(from = 1, to = nrow(centroid_AD), by = 500))
 {
-  route1_marche2 <- osrmTable(src = centroid_AD[k:kk,], dst = coping_capacity,
+  route1_marche2 <- osrmTable(src = centroid_AD[k:kk,], dst = coping_capacity,  #Distance calculation between the displaced centroid and a coping capacity variable
                                 measure = "distance",
                                 osrm.profile = "car",
                                 )
-  distance_df <- as.data.frame(route1_marche2$distances)
-  distance_df <- distance_df[ , colSums(is.na(distance_df)) == 0]
-  centroid_AD$variable[k:kk] <- apply(distance_df,1,min)
+  distance_df <- as.data.frame(route1_marche2$distances) 
+  distance_df <- distance_df[ , colSums(is.na(distance_df)) == 0]  #control for the NA 
+  centroid_AD$variable[k:kk] <- apply(distance_df,1,min) #We keep only the smallest distance
   #print(k)
   k = kk
   kk <- kk + 500
@@ -59,5 +60,5 @@ for (k in seq(from = 1, to = nrow(centroid_AD), by = 500))
   }
 }
 nom_fichier <- paste0("D:\\Universit? Laval\\Cartographie vuln?rabilit? vagues de chaleur accamblante - Documents\\General\\Data\\Capacite\\CANADA\\cultural_art_facilities\\ODCAF_V1.0\\ODCAF_V1.0\\Indice_proximite_par_AD_et_RMR\\cinema_v2")
-writeOGR(obj=as(centroid_AD,"Spatial"), dsn = nom_fichier, layer = "cinema_v2",  driver = "ESRI Shapefile", overwrite_layer = TRUE)
-```
+writeOGR(obj=as(centroid_AD,"Spatial"), dsn = nom_fichier, layer = "cinema_v2",  driver = "ESRI Shapefile", overwrite_layer = TRUE) #Export to shapefile
+``` 
