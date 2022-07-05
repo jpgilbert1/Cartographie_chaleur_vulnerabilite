@@ -143,8 +143,8 @@ Le fichier d'aires de diffusion se retrouve dans le dossier Data
 
 Renomme les colonnes de R2. La première colonne doit être la valeur de la RMRPIDU. Les NA sont mis à 0. Pmax permet d'avoir la valeur maximale pour chaque ligne et la recopie dans la colonne max. Ainsi, l'année qui est == a max est le meilleur modèle à prendre. Le fichier d'aires de diffusion pour le Canada est ensuite lu.
 
-Pour les lignes, va me chercher le fichier RMR. Puis, ne garde que les polygones d'aires de diffusion qui égale le RMRPIDU de la RMR. Ensuite, une boucle sur les colonnes est faite pour déterminer quelle est l'année de la valeur de Pmax. Lorsque c'est le cas, importe le raster SUHII correspondant. Le raster est transformer en point. Ensuite, utilise le fichier d'aires de diffusion découpé selon la RMR. Le fichier d'aires de diffusion est transformé en SpatialPolygon pour effectuer une jointure spatiale. Cela s'effectue avec la fonction 'over'. Elle effectue la moyenne des valeurs de points qui superpose chacune des aires de diffusion. Il ensuite joindre les moyennes au fichier d'aires de diffusion. Donc on doit joindre les deux dataframes. Finalement, exporte le fichier en shapefile.
-
+Pour les lignes, va me chercher le fichier RMR. Puis, ne garde que les polygones d'aires de diffusion qui égale le RMRPIDU de la RMR. Ensuite, une boucle sur les colonnes est faite pour déterminer quelle est l'année de la valeur de Pmax. Lorsque c'est le cas, importe le raster SUHII correspondant. Le raster est transformer en point. Ensuite, utilise le fichier d'aires de diffusion découpé selon la RMR. Le fichier d'aires de diffusion est transformé en SpatialPolygon pour effectuer une jointure spatiale. Cela s'effectue avec la fonction 'over'. Elle effectue la moyenne des valeurs de points qui superpose chacune des aires de diffusion. Il ensuite joindre les moyennes au fichier d'aires de diffusion. Donc on doit joindre les deux dataframes. Finalement, exporte le fichier en shapefile. Cette section peut être fait dans 
+un SIG.
 
 ```{r eval = FALSE}
 library(ggplot2)
